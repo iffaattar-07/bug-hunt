@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { useLab } from '@/context/LabContext';
-import { Target, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Target, CheckCircle2, CircleAlert, Workflow } from 'lucide-react';
+import { Panel, PanelHead } from '@/components/ui/primitives';
+import { motion } from 'framer-motion';
 
 export const ExpectedBehavior: React.FC = () => {
   const { activeChallenge } = useLab();
@@ -10,59 +12,70 @@ export const ExpectedBehavior: React.FC = () => {
   if (!activeChallenge) return null;
 
   return (
-    <div className="bg-[#161B22] border border-[#30363D] rounded-lg overflow-hidden flex flex-col h-full font-mono text-xs select-none">
-      
-      {/* Header */}
-      <div className="bg-[#21262D] border-b border-[#30363D] px-3.5 py-2 flex items-center justify-between text-[#8B949E]">
-        <div className="flex items-center gap-2">
-          <Target className="w-3.5 h-3.5 text-[#3FB950]" />
-          <span className="font-semibold text-[#F0F6FC]">EXPECTED VS ACTUAL SPECIFICATION</span>
-        </div>
-      </div>
+    <Panel className="h-full">
+      <PanelHead
+        tone="pass"
+        icon={<Target className="h-3.5 w-3.5" />}
+        title="Spec: expected vs actual"
+        meta={
+          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-fg-mute">
+            read-only
+          </span>
+        }
+      />
 
-      {/* Body */}
-      <div className="p-3.5 overflow-y-auto flex-1 space-y-4 font-sans">
-        
-        {/* Architecture Overview */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#58A6FF]">
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>ARCHITECTURE OVERVIEW</span>
-          </div>
-          <p className="text-xs text-[#C9D1D9] leading-relaxed bg-[#21262D] p-3 rounded-md border border-[#30363D] select-text font-mono">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+        {/* architecture */}
+        <section>
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-trace">
+            <Workflow className="h-3.5 w-3.5" />
+            Architecture
+          </h3>
+          <p className="select-text rounded-[5px] border border-ink-line bg-ink-950 p-3 font-mono text-[11.5px] leading-relaxed text-fg-dim">
             {activeChallenge.architectureOverview}
           </p>
-        </div>
+        </section>
 
-        {/* Reproduction Steps */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#D29922]">
-            <AlertCircle className="w-3.5 h-3.5" />
-            <span>REPRODUCTION STEPS (ACTUAL FAILURE)</span>
-          </div>
-          <div className="bg-[#21262D] p-3 rounded-md border border-[#30363D] space-y-1.5">
+        {/* repro steps */}
+        <section>
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-signal">
+            <CircleAlert className="h-3.5 w-3.5" />
+            Reproduction — actual failure
+          </h3>
+          <ol className="relative ml-1 space-y-2.5 border-l border-dashed border-ink-edge pl-4">
             {activeChallenge.reproductionSteps.map((step, idx) => (
-              <div key={idx} className="flex items-start gap-2 text-xs text-[#C9D1D9]">
-                <span className="font-mono text-[#D29922] font-bold">{idx + 1}.</span>
-                <span className="select-text">{step}</span>
-              </div>
+              <motion.li
+                key={idx}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.07, duration: 0.35 }}
+                className="relative flex items-start gap-3"
+              >
+                <span className="absolute -left-[23px] top-[1px] grid h-[17px] w-[17px] place-items-center rounded-full border border-signal/50 bg-ink-950 font-mono text-[9px] font-bold text-signal tnum">
+                  {idx + 1}
+                </span>
+                <span className="select-text text-[12.5px] leading-relaxed text-fg-dim">
+                  {step}
+                </span>
+              </motion.li>
             ))}
-          </div>
-        </div>
+          </ol>
+        </section>
 
-        {/* Expected Behavior */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-xs font-mono text-[#3FB950]">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>EXPECTED BEHAVIOR</span>
+        {/* expected */}
+        <section>
+          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-pass">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Expected behaviour
+          </h3>
+          <div className="relative overflow-hidden rounded-[5px] border border-pass/35 bg-pass/10 p-3.5">
+            <span className="absolute inset-y-0 left-0 w-[3px] bg-pass" />
+            <p className="select-text pl-1 font-mono text-[12px] leading-relaxed text-pass">
+              {activeChallenge.expectedBehavior}
+            </p>
           </div>
-          <div className="bg-[#3FB950]/10 border border-[#3FB950]/30 p-3 rounded-md text-xs text-[#3FB950] leading-relaxed select-text font-mono">
-            {activeChallenge.expectedBehavior}
-          </div>
-        </div>
-
+        </section>
       </div>
-
-    </div>
+    </Panel>
   );
 };

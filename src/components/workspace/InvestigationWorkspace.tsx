@@ -7,106 +7,133 @@ import { CodeViewer } from './CodeViewer';
 import { LogConsole } from './LogConsole';
 import { CluesPanel } from './CluesPanel';
 import { ExpectedBehavior } from './ExpectedBehavior';
-import { 
-  Terminal, 
-  Target, 
-  ArrowRight, 
-  Code2
-} from 'lucide-react';
+import { Terminal, Target, ArrowRight, KeyRound } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Chip, cx } from '@/components/ui/primitives';
 
 export const InvestigationWorkspace: React.FC = () => {
-  const { activeChallenge, activeTab, setActiveTab, setStage } = useLab();
+  const { activeChallenge, activeTab, setActiveTab, setStage, unlockedClueIds, attemptsCount } =
+    useLab();
 
   if (!activeChallenge) return null;
 
+  const cluesTotal = activeChallenge.clues.length;
+  const cluesDone = unlockedClueIds.length;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-5 space-y-3.5 text-[#F0F6FC]">
-      
-      {/* Workspace Header Banner */}
-      <div className="bg-[#161B22] border border-[#30363D] rounded-lg p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-[#58A6FF] mb-0.5">
-            <span className="uppercase font-semibold">{activeChallenge.language}</span>
-            <span>•</span>
-            <span className="uppercase text-[#BC8CFF] font-semibold">{activeChallenge.bugCategory}</span>
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6">
+      {/* ---------------- mission banner ---------------- */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="panel rail-tick relative flex flex-col gap-4 overflow-hidden pl-5 pr-4 py-4 md:flex-row md:items-center md:justify-between"
+      >
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip tone="signal">{activeChallenge.language}</Chip>
+            <Chip tone="clue">{activeChallenge.bugCategory}</Chip>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-fg-mute">
+              Incident report
+            </span>
           </div>
-          <h1 className="text-xl font-bold text-[#F0F6FC] font-sans">{activeChallenge.title}</h1>
-          <p className="text-xs text-[#8B949E] font-sans mt-0.5">{activeChallenge.tagline}</p>
+          <h1 className="mt-2 font-display text-[22px] font-bold leading-tight tracking-tight text-fg">
+            {activeChallenge.title}
+          </h1>
+          <p className="mt-1 max-w-[70ch] text-[13px] leading-relaxed text-fg-dim">
+            {activeChallenge.tagline}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5 self-end md:self-auto">
-          <button
-            onClick={() => setStage('diagnose')}
-            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-semibold text-xs transition-colors shadow-sm"
-          >
-            <span>PROCEED TO DIAGNOSIS</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
+          {/* live case stats */}
+          <div className="flex items-center gap-4 rounded-[5px] border border-ink-line bg-ink-900 px-4 py-2.5">
+            <div>
+              <div className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
+                <KeyRound className="h-3 w-3 text-clue" />
+                Clues
+              </div>
+              <div className="mt-1 font-display text-base font-bold leading-none text-fg tnum">
+                {cluesDone}
+                <span className="text-fg-mute">/{cluesTotal}</span>
+              </div>
+            </div>
+            <span className="h-7 w-px bg-ink-line" />
+            <div>
+              <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
+                Attempts
+              </div>
+              <div className="mt-1 font-display text-base font-bold leading-none text-signal tnum">
+                {attemptsCount}
+              </div>
+            </div>
+          </div>
+
+          <button onClick={() => setStage('diagnose')} className="group btn-primary btn-sweep">
+            <span>Proceed to diagnosis</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Main Developer Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 h-[calc(100vh-190px)] min-h-[580px]">
-        
-        {/* Left Column: File Explorer & Clues (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-3.5 h-full">
-          <div className="h-1/2 min-h-[250px]">
+      {/* ---------------- workspace grid ---------------- */}
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12 lg:h-[calc(100vh-236px)] lg:min-h-[600px]">
+        {/* left rail */}
+        <div className="flex flex-col gap-4 lg:col-span-4 lg:h-full lg:min-h-0">
+          <div className="h-[300px] lg:h-[46%] lg:min-h-0">
             <FileExplorer />
           </div>
-          <div className="h-1/2 min-h-[250px]">
+          <div className="h-[340px] lg:h-[54%] lg:min-h-0">
             <CluesPanel />
           </div>
         </div>
 
-        {/* Center/Right Column: Code Viewer & Logs/Spec (8 cols) */}
-        <div className="lg:col-span-8 flex flex-col gap-3.5 h-full">
-          
-          {/* Code Viewer (Top 62%) */}
-          <div className="h-[62%] min-h-[340px]">
+        {/* main column */}
+        <div className="flex min-w-0 flex-col gap-4 lg:col-span-8 lg:h-full lg:min-h-0">
+          <div className="h-[420px] lg:h-[60%] lg:min-h-0">
             <CodeViewer />
           </div>
 
-          {/* Tabbed Log Console & Spec (Bottom 38%) */}
-          <div className="h-[38%] min-h-[220px] flex flex-col">
-            
-            {/* Panel Tabs */}
-            <div className="flex items-center gap-1.5 mb-1.5 font-mono text-xs">
-              <button
-                onClick={() => setActiveTab('logs')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-t-md transition-colors ${
-                  activeTab === 'logs' || activeTab === 'editor'
-                    ? 'bg-[#161B22] text-[#58A6FF] border-t border-x border-[#30363D] font-medium'
-                    : 'text-[#8B949E] hover:text-[#F0F6FC]'
-                }`}
-              >
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Console Logs</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('expected')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-t-md transition-colors ${
-                  activeTab === 'expected'
-                    ? 'bg-[#161B22] text-[#3FB950] border-t border-x border-[#30363D] font-medium'
-                    : 'text-[#8B949E] hover:text-[#F0F6FC]'
-                }`}
-              >
-                <Target className="w-3.5 h-3.5" />
-                <span>Expected Spec</span>
-              </button>
+          <div className="flex min-h-[300px] flex-col lg:h-[40%] lg:min-h-0">
+            {/* tab rail */}
+            <div className="mb-2 flex items-center gap-1">
+              {[
+                { id: 'logs', label: 'Runtime log', icon: <Terminal className="h-3.5 w-3.5" /> },
+                { id: 'expected', label: 'Spec', icon: <Target className="h-3.5 w-3.5" /> },
+              ].map((t) => {
+                const active =
+                  activeTab === t.id || (t.id === 'logs' && activeTab === 'editor');
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id as 'logs' | 'expected')}
+                    className={cx(
+                      'relative flex items-center gap-2 rounded-t-[6px] border border-b-0 px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] transition-colors',
+                      active
+                        ? 'border-ink-line bg-ink-800 text-signal'
+                        : 'border-transparent text-fg-mute hover:text-fg',
+                    )}
+                  >
+                    {t.icon}
+                    {t.label}
+                    {active && (
+                      <motion.span
+                        layoutId="tab-rail"
+                        transition={{ type: 'spring', stiffness: 440, damping: 34 }}
+                        className="absolute inset-x-0 -top-[1px] h-[2px] rounded-full bg-signal"
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Active Panel View */}
-            <div className="flex-1 overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden">
               {activeTab === 'expected' ? <ExpectedBehavior /> : <LogConsole />}
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 };
