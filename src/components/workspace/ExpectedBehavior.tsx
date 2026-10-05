@@ -18,43 +18,43 @@ export const ExpectedBehavior: React.FC = () => {
         icon={<Target className="h-3.5 w-3.5" />}
         title="Spec: expected vs actual"
         meta={
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-fg-mute">
+          <span className="font-mono text-[10.5px] tracking-[0.06em] text-fg-mute">
             read-only
           </span>
         }
       />
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
         {/* architecture */}
         <section>
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-trace">
+          <h3 className="mb-2.5 flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-trace">
             <Workflow className="h-3.5 w-3.5" />
-            Architecture
+            architecture
           </h3>
-          <p className="select-text rounded-[5px] border border-ink-line bg-ink-950 p-3 font-mono text-[11.5px] leading-relaxed text-fg-dim">
+          <p className="select-text border border-ink-line bg-ink-950 p-3 font-mono text-[12px] leading-[1.7] text-fg-dim">
             {activeChallenge.architectureOverview}
           </p>
         </section>
 
         {/* repro steps */}
         <section>
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-signal">
+          <h3 className="mb-3 flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-signal">
             <CircleAlert className="h-3.5 w-3.5" />
-            Reproduction — actual failure
+            reproduction — actual failure
           </h3>
-          <ol className="relative ml-1 space-y-2.5 border-l border-dashed border-ink-edge pl-4">
+          <ol className="relative ml-1 space-y-3 border-l border-ink-edge pl-5">
             {activeChallenge.reproductionSteps.map((step, idx) => (
               <motion.li
                 key={idx}
-                initial={{ opacity: 0, x: -6 }}
+                initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.07, duration: 0.35 }}
+                transition={{ delay: idx * 0.06, duration: 0.3 }}
                 className="relative flex items-start gap-3"
               >
-                <span className="absolute -left-[23px] top-[1px] grid h-[17px] w-[17px] place-items-center rounded-full border border-signal/50 bg-ink-950 font-mono text-[9px] font-bold text-signal tnum">
+                <span className="absolute -left-[27px] top-[1px] grid h-[19px] w-[19px] place-items-center border border-signal/60 bg-ink-950 font-mono text-[9.5px] font-bold text-signal tnum">
                   {idx + 1}
                 </span>
-                <span className="select-text text-[12.5px] leading-relaxed text-fg-dim">
+                <span className="select-text text-[13px] leading-[1.7] text-fg-dim">
                   {step}
                 </span>
               </motion.li>
@@ -64,13 +64,12 @@ export const ExpectedBehavior: React.FC = () => {
 
         {/* expected */}
         <section>
-          <h3 className="mb-2 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-pass">
+          <h3 className="mb-2.5 flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-pass">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Expected behaviour
+            expected behaviour
           </h3>
-          <div className="relative overflow-hidden rounded-[5px] border border-pass/35 bg-pass/10 p-3.5">
-            <span className="absolute inset-y-0 left-0 w-[3px] bg-pass" />
-            <p className="select-text pl-1 font-mono text-[12px] leading-relaxed text-pass">
+          <div className="border-l-2 border-pass bg-pass/[0.05] px-4 py-3.5">
+            <p className="select-text font-mono text-[12.5px] leading-[1.7] text-pass">
               {activeChallenge.expectedBehavior}
             </p>
           </div>

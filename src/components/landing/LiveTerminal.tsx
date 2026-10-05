@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface StreamLine {
   tag: string;
@@ -91,60 +91,51 @@ export const LiveTerminal: React.FC = () => {
   const current = SCRIPT[typed.idx];
 
   return (
-    <div className="panel group relative overflow-hidden">
-      {/* window chrome */}
-      <div className="flex items-center justify-between border-b border-ink-line bg-ink-700 px-3.5 py-2.5">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-fail/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-signal/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-pass/80" />
-          <span className="ml-2 font-mono text-[10px] text-fg-mute">
-            incident-channel.log
-          </span>
+    <div className="panel relative overflow-hidden">
+      {/* header */}
+      <div className="flex items-center justify-between border-b border-ink-line bg-ink-850 px-4 py-3">
+        <div className="flex items-center gap-2.5 font-mono text-[11px] tracking-[0.05em] text-fg-dim">
+          <span className="text-signal">▸</span>
+          <span>incident-channel.log</span>
         </div>
-        <span className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-pass">
+        <span className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.1em] text-pass">
           <span className="h-1.5 w-1.5 rounded-full bg-pass animate-pulse-dot" />
-          Live
+          rec
         </span>
       </div>
 
       {/* body */}
       <div
         ref={bodyRef}
-        className="scanlines relative h-[224px] space-y-2.5 overflow-y-auto bg-ink-950 p-4 font-mono text-[11.5px] leading-relaxed sm:h-[248px]"
+        className="scanlines relative h-[224px] space-y-2.5 overflow-y-auto bg-ink-950 px-4 py-4 font-mono text-[11.5px] leading-[1.7] sm:h-[252px]"
       >
-        {/* slow CRT sweep */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-signal/[0.07] to-transparent animate-scan opacity-60" />
-
         {typed.lines.map((l, i) => (
           <motion.div
             key={`${i}-${l.text}`}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.24 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
             className="flex gap-2.5"
           >
-            <span className="shrink-0 select-none text-fg-mute/60">
-              {String(10 + i).padStart(2, '0')}:
+            <span className="shrink-0 select-none text-fg-mute/60 tnum">
+              {String(10 + i).padStart(2, '0')}
             </span>
-            <span className={`w-[46px] shrink-0 font-bold ${toneCls[l.tone]}`}>
-              [{l.tag}]
-            </span>
+            <span className={`w-[46px] shrink-0 ${toneCls[l.tone]}`}>[{l.tag}]</span>
             <span className="min-w-0 break-words text-fg-dim">{l.text}</span>
           </motion.div>
         ))}
 
         {(current || typed.idx >= SCRIPT.length) && (
           <div className="flex gap-2.5">
-            <span className="shrink-0 select-none text-fg-mute/60">
-              {String(10 + typed.lines.length).padStart(2, '0')}:
+            <span className="shrink-0 select-none text-fg-mute/60 tnum">
+              {String(10 + typed.lines.length).padStart(2, '0')}
             </span>
             <span
-              className={`w-[46px] shrink-0 font-bold ${
+              className={`w-[46px] shrink-0 ${
                 current ? toneCls[current.tone] : 'text-pass'
               }`}
             >
-              {current ? `[${current.tag}]` : '[ READY]'}
+              {current ? `[${current.tag}]` : '[READY]'}
             </span>
             <span className="min-w-0 break-words text-fg">
               {current ? typed.partial : 'awaiting investigator'}
@@ -155,8 +146,9 @@ export const LiveTerminal: React.FC = () => {
       </div>
 
       {/* status strip */}
-      <div className="flex items-center justify-between border-t border-ink-line bg-ink-800 px-3.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
+      <div className="flex items-center gap-3 border-t border-ink-line bg-ink-850 px-4 py-2.5 font-mono text-[10px] tracking-[0.06em] text-fg-mute">
         <span>utf-8 · lf · read-only</span>
+        <span className="leader" />
         <span className="text-signal">branch: bug-hunt/prime</span>
       </div>
     </div>

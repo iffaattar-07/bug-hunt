@@ -27,7 +27,7 @@ export const FileExplorer: React.FC = () => {
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        <div className="mb-2 flex items-center gap-2 px-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-fg-mute">
+        <div className="mb-2 flex items-center gap-2 px-3 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute">
           <span className="text-signal">❯</span>
           src/
         </div>
@@ -44,17 +44,17 @@ export const FileExplorer: React.FC = () => {
                 transition={{ delay: i * 0.04, duration: 0.3 }}
                 onClick={() => setActiveFile(file)}
                 className={cx(
-                  'group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-[5px] border px-2.5 py-2 text-left transition-all duration-200',
+                  'group relative flex w-full items-center justify-between gap-2 overflow-hidden px-3 py-2.5 text-left transition-colors duration-150',
                   isSelected
-                    ? 'border-signal/50 bg-signal/10 text-signal'
-                    : 'border-transparent text-fg-dim hover:border-ink-edge hover:bg-ink-700 hover:text-fg',
+                    ? 'bg-signal/[0.08] text-signal'
+                    : 'text-fg-dim hover:bg-white/[0.025] hover:text-fg',
                 )}
               >
                 {isSelected && (
                   <motion.span
                     layoutId="file-active"
-                    transition={{ type: 'spring', stiffness: 480, damping: 36 }}
-                    className="absolute inset-y-0 left-0 w-[3px] bg-signal"
+                    transition={{ type: 'spring', stiffness: 520, damping: 44 }}
+                    className="absolute inset-y-0 left-0 w-[2px] bg-signal"
                   />
                 )}
 
@@ -62,16 +62,16 @@ export const FileExplorer: React.FC = () => {
                   <FileCode
                     className={cx(
                       'h-3.5 w-3.5 shrink-0 transition-colors',
-                      isSelected ? 'text-signal' : file.isSuspect ? 'text-fail/70' : 'text-fg-mute',
+                      isSelected ? 'text-signal' : file.isSuspect ? 'text-fail/80' : 'text-fg-mute',
                     )}
                   />
-                  <span className="truncate font-mono text-[11.5px]">{file.name}</span>
+                  <span className="truncate font-mono text-[12px]">{file.name}</span>
                 </span>
 
                 {file.isSuspect && (
-                  <span className="flex shrink-0 items-center gap-1 rounded border border-fail/35 bg-fail/10 px-1.5 py-[1px] font-mono text-[8.5px] font-bold uppercase tracking-[0.12em] text-fail">
+                  <span className="flex shrink-0 items-center gap-1 border border-fail/40 px-1.5 py-[1px] font-mono text-[9px] tracking-[0.08em] text-fail">
                     <TriangleAlert className="h-2.5 w-2.5" />
-                    Flagged
+                    flag
                   </span>
                 )}
               </motion.button>
@@ -80,9 +80,10 @@ export const FileExplorer: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-ink-line bg-ink-700/60 px-3.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
+      <div className="flex items-baseline gap-2 border-t border-ink-line bg-ink-850 px-3.5 py-2.5 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute">
         <span>{activeChallenge.slug}</span>
-        <span className="text-fail/80">{flaggedNote(suspects)} flagged</span>
+        <span className="leader" />
+        <span className={suspects > 0 ? 'text-fail' : ''}>{flaggedNote(suspects)} flagged</span>
       </div>
     </Panel>
   );

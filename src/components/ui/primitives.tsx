@@ -34,9 +34,11 @@ export const PanelHead: React.FC<{
 
   return (
     <div className={cx('panel-head relative flex-wrap', tick && 'rail-tick pl-4')}>
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2.5">
         <span className={cx('shrink-0', toneCls)}>{icon}</span>
-        <span className="label truncate text-fg">{title}</span>
+        <span className="truncate font-mono text-[11px] font-medium tracking-[0.05em] text-fg">
+          {title}
+        </span>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {meta}
@@ -55,18 +57,18 @@ export const Chip: React.FC<{
   tone?: 'signal' | 'pass' | 'fail' | 'clue' | 'trace' | 'neutral';
 }> = ({ children, className, tone = 'neutral' }) => {
   const tones = {
-    signal: 'border-signal/35 bg-signal/10 text-signal',
-    pass: 'border-pass/35 bg-pass/10 text-pass',
-    fail: 'border-fail/35 bg-fail/10 text-fail',
-    clue: 'border-clue/35 bg-clue/10 text-clue',
-    trace: 'border-trace/35 bg-trace/10 text-trace',
-    neutral: 'border-ink-edge bg-ink-700 text-fg-dim',
+    signal: 'border-signal/40 bg-signal/[0.07] text-signal',
+    pass: 'border-pass/40 bg-pass/[0.07] text-pass',
+    fail: 'border-fail/40 bg-fail/[0.07] text-fail',
+    clue: 'border-clue/35 bg-clue/[0.06] text-clue',
+    trace: 'border-trace/35 bg-trace/[0.06] text-trace',
+    neutral: 'border-ink-edge bg-transparent text-fg-dim',
   } as const;
 
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 rounded border px-2 py-[3px] font-mono text-[10px] font-semibold uppercase tracking-[0.12em]',
+        'inline-flex items-center gap-1.5 rounded-sm border px-2 py-[3px] font-mono text-[10px] font-medium tracking-[0.06em]',
         tones[tone],
         className,
       )}
@@ -77,7 +79,7 @@ export const Chip: React.FC<{
 };
 
 /* ------------------------------------------------------------------ */
-/*  Segmented — sliding pill filter (framer layoutId)                  */
+/*  Segmented — sliding block filter (framer layoutId)                 */
 /* ------------------------------------------------------------------ */
 export const Segmented: React.FC<{
   options: { value: string; label: string; icon?: React.ReactNode }[];
@@ -85,7 +87,7 @@ export const Segmented: React.FC<{
   onChange: (v: string) => void;
   id: string;
 }> = ({ options, value, onChange, id }) => (
-  <div className="inline-flex items-center gap-0.5 rounded-md border border-ink-line bg-ink-900 p-1">
+  <div className="inline-flex items-center gap-0.5 rounded-sm border border-ink-line bg-ink-900 p-1">
     {options.map((opt) => {
       const active = opt.value === value;
       return (
@@ -93,15 +95,15 @@ export const Segmented: React.FC<{
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={cx(
-            'relative rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em] transition-colors',
+            'relative rounded-sm px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.06em] transition-colors duration-150',
             active ? 'text-ink-950' : 'text-fg-mute hover:text-fg',
           )}
         >
           {active && (
             <motion.span
               layoutId={`seg-${id}`}
-              transition={{ type: 'spring', stiffness: 460, damping: 34 }}
-              className="absolute inset-0 rounded bg-signal"
+              transition={{ type: 'spring', stiffness: 520, damping: 42 }}
+              className="absolute inset-0 rounded-sm bg-signal"
             />
           )}
           <span className="relative flex items-center gap-1.5">
@@ -115,7 +117,7 @@ export const Segmented: React.FC<{
 );
 
 /* ------------------------------------------------------------------ */
-/*  Meter — blocky arcade progress segments                            */
+/*  Meter — blocky progress segments                                   */
 /* ------------------------------------------------------------------ */
 export const Meter: React.FC<{
   value: number;
@@ -131,13 +133,10 @@ export const Meter: React.FC<{
   return (
     <div className={cx('flex items-center gap-[3px]', className)}>
       {Array.from({ length: segments }).map((_, i) => (
-        <motion.span
+        <span
           key={i}
-          initial={{ scaleY: 0.3, opacity: 0 }}
-          animate={{ scaleY: 1, opacity: 1 }}
-          transition={{ delay: i * 0.02, type: 'spring', stiffness: 500, damping: 30 }}
           className={cx(
-            'h-full w-full origin-bottom flex-1 rounded-[1px]',
+            'h-full w-full flex-1 origin-bottom rounded-[1px] transition-colors duration-300',
             i < filled ? color : 'bg-ink-600',
           )}
         />
@@ -154,10 +153,18 @@ export const Counter: React.FC<{
   duration?: number;
   className?: string;
   suffix?: string;
-}> = ({ to, duration = 1100, className, suffix = '' }) => {
+}> = ({ to, duration = 900, className, suffix = '' }) => {
   const [n, setN] = useState(0);
 
   useEffect(() => {
+    const reduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setN(to);
+      return;
+    }
+
     let raf = 0;
     const t0 = performance.now();
 
@@ -181,7 +188,7 @@ export const Counter: React.FC<{
 };
 
 /* ------------------------------------------------------------------ */
-/*  Stamp — rotated verification ink stamp                             */
+/*  Stamp — ink stamp, pressed slightly off-square                      */
 /* ------------------------------------------------------------------ */
 export const Stamp: React.FC<{
   text: string;
@@ -189,14 +196,12 @@ export const Stamp: React.FC<{
   className?: string;
 }> = ({ text, tone = 'pass', className }) => (
   <motion.div
-    initial={{ scale: 2.2, opacity: 0, rotate: -26 }}
-    animate={{ scale: 1, opacity: 1, rotate: -13 }}
-    transition={{ type: 'spring', stiffness: 260, damping: 14 }}
+    initial={{ scale: 1.6, opacity: 0, rotate: -18 }}
+    animate={{ scale: 1, opacity: 1, rotate: -7 }}
+    transition={{ type: 'spring', stiffness: 320, damping: 22 }}
     className={cx(
-      'stamp rounded',
-      tone === 'pass'
-        ? 'border-pass/70 text-pass'
-        : 'border-signal/70 text-signal',
+      'stamp',
+      tone === 'pass' ? 'border-pass/70 text-pass' : 'border-signal/70 text-signal',
       className,
     )}
   >
@@ -205,7 +210,7 @@ export const Stamp: React.FC<{
 );
 
 /* ------------------------------------------------------------------ */
-/*  SectionHead — editorial page headers with consistent baseline      */
+/*  SectionHead — editorial page header: kicker, rule, big title       */
 /* ------------------------------------------------------------------ */
 export const SectionHead: React.FC<{
   kicker: string;
@@ -223,16 +228,23 @@ export const SectionHead: React.FC<{
   }[tone];
 
   return (
-    <div className="flex flex-col gap-5 border-b border-ink-line pb-6 md:flex-row md:items-end md:justify-between">
-      <div className="min-w-0 space-y-2.5">
-        <div className={cx('flex items-center gap-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.24em]', toneCls)}>
-          <span className="h-[7px] w-[7px] rounded-full bg-current animate-pulse-dot" />
+    <div className="flex flex-col gap-6 border-b border-ink-line pb-7 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0">
+        <div
+          className={cx(
+            'flex items-center gap-3 font-mono text-[11px] font-medium tracking-[0.08em]',
+            toneCls,
+          )}
+        >
+          <span className="text-fg-mute">§</span>
           {kicker}
         </div>
-        <h1 className="font-display text-2xl font-bold leading-[1.1] tracking-tight text-fg md:text-[28px]">
+        <h1 className="mt-3 max-w-[22ch] font-display text-[30px] font-extrabold leading-[1.02] tracking-[-0.035em] text-fg md:text-[38px]">
           {title}
         </h1>
-        {desc && <p className="max-w-xl text-[13px] leading-relaxed text-fg-dim">{desc}</p>}
+        {desc && (
+          <p className="mt-3 max-w-[54ch] text-[14px] leading-[1.7] text-fg-dim">{desc}</p>
+        )}
       </div>
       {right && <div className="shrink-0">{right}</div>}
     </div>
@@ -240,7 +252,7 @@ export const SectionHead: React.FC<{
 };
 
 /* ------------------------------------------------------------------ */
-/*  Delta row — tiny +/- diff line used in fix & report cards          */
+/*  DiffLine — tiny +/- diff line used in fix & report cards           */
 /* ------------------------------------------------------------------ */
 export const DiffLine: React.FC<{
   sign: '-' | '+';
@@ -248,12 +260,11 @@ export const DiffLine: React.FC<{
 }> = ({ sign, children }) => (
   <div
     className={cx(
-      'flex gap-3 rounded-[3px] px-2 py-[3px] leading-[1.65]',
-      sign === '-' ? 'bg-fail/10 text-fail/90' : 'bg-pass/10 text-pass/90',
+      'flex gap-3 px-2 py-[3px] leading-[1.65]',
+      sign === '-' ? 'bg-fail/[0.09] text-fail/90' : 'bg-pass/[0.09] text-pass/90',
     )}
   >
     <span className="w-3 shrink-0 select-none opacity-70">{sign}</span>
     <span className="whitespace-pre">{children}</span>
   </div>
 );
-

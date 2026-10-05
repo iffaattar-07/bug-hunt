@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useLab } from '@/context/LabContext';
-import { ShieldAlert, Check, X, ArrowRight, FileCode2, HelpCircle } from 'lucide-react';
+import { ShieldAlert, Check, X, ArrowRight, FileCode2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { SectionHead, cx, Chip } from '@/components/ui/primitives';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 export const DiagnosisStage: React.FC = () => {
   const {
@@ -25,7 +26,12 @@ export const DiagnosisStage: React.FC = () => {
   useEffect(() => {
     if (selectedDiagnosis?.isCorrect) {
       try {
-        confetti({ particleCount: 90, spread: 72, origin: { y: 0.55 }, colors: ['#FFC53D', '#54D67C', '#5AC8E8'] });
+        confetti({
+          particleCount: 70,
+          spread: 65,
+          origin: { y: 0.55 },
+          colors: ['#E9B949', '#7FB069', '#CBBDA6'],
+        });
       } catch {
         /* noop */
       }
@@ -45,10 +51,10 @@ export const DiagnosisStage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[880px] px-4 py-9 sm:px-6">
+    <div className="mx-auto w-full max-w-[900px] px-4 py-9 sm:px-6">
       <SectionHead
         tone="clue"
-        kicker="Stage 2 / 5 — Root cause"
+        kicker="Stage 2 / 5 — root cause"
         title={
           <>
             What is breaking{' '}
@@ -57,29 +63,29 @@ export const DiagnosisStage: React.FC = () => {
         }
         desc="Commit to one hypothesis. The lab grades your reasoning immediately and records every attempt against your run."
         right={
-          <div className="flex items-center gap-3 rounded-[5px] border border-ink-line bg-ink-800 px-4 py-3">
-            <HelpCircle className="h-4 w-4 text-signal" />
+          <div className="flex items-center gap-5 border-l border-ink-line pl-5">
             <div>
-              <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
-                Attempts
-              </div>
-              <div className="mt-0.5 font-display text-lg font-bold leading-none text-signal tnum">
-                {String(attemptsCount).padStart(2, '0')}
+              <div className="flex items-baseline gap-2 font-mono text-[11px] tracking-[0.08em] text-fg-mute">
+                <span>attempts</span>
+                <span className="leader w-8" />
+                <span className="font-display text-[17px] font-extrabold text-fg tnum">
+                  {String(attemptsCount).padStart(2, '0')}
+                </span>
               </div>
             </div>
-            <span className="h-8 w-px bg-ink-line" />
             <button
               onClick={() => setStage('investigate')}
-              className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-trace transition-colors hover:text-signal"
+              className="btn-underline relative flex items-center gap-1.5 font-mono text-[11px] tracking-[0.05em] text-fg-dim transition-colors hover:text-signal"
             >
               <FileCode2 className="h-3.5 w-3.5" />
-              Back to code
+              back to code
             </button>
           </div>
         }
       />
 
-      <div className="mt-7 space-y-3">
+      {/* hypotheses — a ruled register, not a stack of cards */}
+      <div className="mt-8 border-t border-ink-line">
         {activeChallenge.diagnoses.map((option, idx) => {
           const isPicked = picked === option.id || selectedDiagnosis?.id === option.id;
           const feedbackHere = diagnosisFeedback?.optionId === option.id;
@@ -89,80 +95,84 @@ export const DiagnosisStage: React.FC = () => {
           return (
             <motion.div
               key={option.id}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{
                 opacity: 1,
                 y: 0,
-                x: shakeId === option.id ? [0, -10, 9, -6, 4, 0] : 0,
+                x: shakeId === option.id ? [0, -8, 7, -5, 3, 0] : 0,
               }}
               transition={{
-                delay: idx * 0.07,
-                duration: shakeId === option.id ? 0.5 : 0.45,
-                ease: [0.16, 1, 0.3, 1],
+                delay: idx * 0.06,
+                duration: shakeId === option.id ? 0.45 : 0.4,
+                ease,
               }}
               onClick={() => handleSelect(option.id)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && handleSelect(option.id)}
               className={cx(
-                'group relative cursor-pointer overflow-hidden rounded-lg border bg-ink-800 p-5 shadow-panel transition-all duration-300',
+                'group relative cursor-pointer border-b border-ink-line py-6 pl-14 pr-4 transition-colors duration-200',
                 correctPick
-                  ? 'border-pass/60 ring-1 ring-pass/25'
+                  ? 'bg-pass/[0.05]'
                   : wrongPick
-                    ? 'border-fail/60'
+                    ? 'bg-fail/[0.05]'
                     : selectedDiagnosis?.isCorrect
-                      ? 'border-ink-line opacity-50'
-                      : 'border-ink-line hover:-translate-y-0.5 hover:border-signal/45 hover:shadow-lift',
+                      ? 'opacity-40'
+                      : 'hover:bg-white/[0.02]',
               )}
             >
-              {/* left state bar */}
+              {/* state rule */}
               <span
                 className={cx(
-                  'absolute inset-y-0 left-0 w-[3px] transition-colors',
-                  correctPick ? 'bg-pass' : wrongPick ? 'bg-fail' : 'bg-transparent group-hover:bg-signal/60',
+                  'absolute inset-y-0 left-0 w-[3px] transition-colors duration-200',
+                  correctPick
+                    ? 'bg-pass'
+                    : wrongPick
+                      ? 'bg-fail'
+                      : 'bg-transparent group-hover:bg-signal/70',
                 )}
               />
 
-              <div className="flex items-start gap-4">
-                {/* letter marker */}
-                <span
-                  className={cx(
-                    'grid h-9 w-9 shrink-0 place-items-center rounded-[6px] border font-display text-[13px] font-bold transition-all duration-300',
-                    correctPick
-                      ? 'border-pass bg-pass text-ink-950'
-                      : wrongPick
-                        ? 'border-fail bg-fail text-ink-950'
-                        : 'border-ink-edge bg-ink-700 text-fg-dim group-hover:border-signal/50 group-hover:text-signal',
-                  )}
-                >
-                  {correctPick ? (
-                    <Check className="h-4 w-4" />
-                  ) : wrongPick ? (
-                    <X className="h-4 w-4" />
-                  ) : (
-                    LETTERS[idx]
-                  )}
-                </span>
+              {/* letter in the margin */}
+              <span
+                className={cx(
+                  'absolute left-4 top-6 font-mono text-[15px] font-bold transition-colors duration-200',
+                  correctPick
+                    ? 'text-pass'
+                    : wrongPick
+                      ? 'text-fail'
+                      : 'text-ink-400 group-hover:text-signal',
+                )}
+              >
+                {correctPick ? (
+                  <Check className="h-4 w-4" />
+                ) : wrongPick ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  LETTERS[idx]
+                )}
+              </span>
 
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <h3 className="font-display text-[16px] font-semibold leading-tight tracking-tight text-fg">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="font-display text-[17px] font-bold leading-tight tracking-[-0.02em] text-fg">
                       {option.title}
                     </h3>
-                    {correctPick && <Chip tone="pass">Confirmed</Chip>}
+                    {correctPick && <Chip tone="pass">confirmed</Chip>}
                   </div>
-                  <p className="mt-2 text-[13px] leading-relaxed text-fg-dim">
+                  <p className="mt-2 max-w-[68ch] text-[13.5px] leading-[1.7] text-fg-dim">
                     {option.description}
                   </p>
                 </div>
 
                 <span
                   className={cx(
-                    'hidden shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.16em] transition-opacity sm:block',
-                    isPicked ? 'opacity-100 text-fg-mute' : 'opacity-0 group-hover:opacity-60 text-fg-mute',
+                    'hidden shrink-0 font-mono text-[10px] tracking-[0.08em] transition-opacity sm:block',
+                    isPicked ? 'text-fg-mute opacity-100' : 'text-fg-mute opacity-0 group-hover:opacity-60',
                   )}
                 >
-                  {isPicked ? 'selected' : 'select'}
+                  {isPicked ? '· selected' : '· select'}
                 </span>
               </div>
 
@@ -173,34 +183,32 @@ export const DiagnosisStage: React.FC = () => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.32, ease }}
                     className="overflow-hidden"
                   >
                     <div
                       className={cx(
-                        'mt-4 rounded-[5px] border p-3.5',
-                        diagnosisFeedback.isCorrect
-                          ? 'border-pass/35 bg-pass/10'
-                          : 'border-fail/35 bg-fail/10',
+                        'mt-4 border-l-2 py-2 pl-4',
+                        diagnosisFeedback.isCorrect ? 'border-pass' : 'border-fail',
                       )}
                     >
                       <div
                         className={cx(
-                          'mb-1.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em]',
+                          'flex items-center gap-2 font-mono text-[11px] tracking-[0.08em]',
                           diagnosisFeedback.isCorrect ? 'text-pass' : 'text-fail',
                         )}
                       >
                         {diagnosisFeedback.isCorrect ? (
                           <>
-                            <Check className="h-3.5 w-3.5" /> Root cause confirmed
+                            <Check className="h-3.5 w-3.5" /> root cause confirmed
                           </>
                         ) : (
                           <>
-                            <X className="h-3.5 w-3.5" /> Hypothesis rejected
+                            <X className="h-3.5 w-3.5" /> hypothesis rejected
                           </>
                         )}
                       </div>
-                      <p className="select-text text-[13px] leading-relaxed text-fg-dim">
+                      <p className="mt-1.5 select-text text-[13.5px] leading-[1.7] text-fg-dim">
                         {diagnosisFeedback.message}
                       </p>
                     </div>
@@ -216,28 +224,28 @@ export const DiagnosisStage: React.FC = () => {
       <AnimatePresence>
         {selectedDiagnosis?.isCorrect && (
           <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 overflow-hidden rounded-lg border border-pass/40 bg-ink-800 shadow-panel"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease }}
+            className="crop relative mt-8 border border-ink-line bg-ink-850"
           >
-            <div className="h-[6px] w-full hazard" />
-            <div className="flex flex-col items-start gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="hazard h-[5px] w-full" />
+            <div className="flex flex-col items-start gap-6 px-6 py-7 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-pass">
+                <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.08em] text-pass">
                   <ShieldAlert className="h-3.5 w-3.5" />
-                  Verdict locked
+                  verdict locked
                 </div>
-                <h3 className="mt-2 font-display text-[20px] font-bold tracking-tight text-fg">
+                <h3 className="mt-3 max-w-[24ch] font-display text-[24px] font-extrabold leading-[1.05] tracking-[-0.035em] text-fg">
                   Root cause isolated in {attemptsCount} attempt
                   {attemptsCount === 1 ? '' : 's'}.
                 </h3>
-                <p className="mt-1.5 max-w-[52ch] text-[13px] leading-relaxed text-fg-dim">
+                <p className="mt-2 max-w-[54ch] text-[13.5px] leading-[1.7] text-fg-dim">
                   Now weigh the candidate patches and pick the one that fixes the
                   cause — not the symptom.
                 </p>
               </div>
-              <button onClick={() => setStage('fix')} className="group btn-primary btn-sweep shrink-0">
+              <button onClick={() => setStage('fix')} className="group btn-primary shrink-0">
                 <span>Choose the fix</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </button>

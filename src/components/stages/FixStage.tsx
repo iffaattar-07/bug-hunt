@@ -6,6 +6,8 @@ import { FileCode2, ArrowRight, GitCompare, Check, TriangleAlert, CheckCircle2 }
 import { motion, AnimatePresence } from 'framer-motion';
 import { SectionHead, Chip, cx, DiffLine } from '@/components/ui/primitives';
 
+const ease = [0.16, 1, 0.3, 1] as const;
+
 export const FixStage: React.FC = () => {
   const { activeChallenge, selectedFix, submitFix, setStage } = useLab();
 
@@ -21,8 +23,7 @@ export const FixStage: React.FC = () => {
   return (
     <div className="mx-auto w-full max-w-[980px] px-4 py-9 sm:px-6">
       <SectionHead
-        tone="signal"
-        kicker="Stage 3 / 5 — Patch selection"
+        kicker="Stage 3 / 5 — patch selection"
         title="Pick the fix you would actually ship"
         desc="Each candidate touches the same file. One resolves the root cause; the others merely quiet the symptom."
         right={
@@ -33,7 +34,7 @@ export const FixStage: React.FC = () => {
         }
       />
 
-      <div className="mt-7 space-y-4">
+      <div className="mt-8 border-t border-ink-line">
         {activeChallenge.fixes.map((fix, idx) => {
           const isSelected = selectedFix?.id === fix.id;
           const solved = isSelected && fix.isCorrect;
@@ -41,84 +42,97 @@ export const FixStage: React.FC = () => {
           return (
             <motion.article
               key={fix.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.09, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: idx * 0.08, duration: 0.45, ease }}
               onClick={() => submitFix(fix.id)}
               className={cx(
-                'group relative cursor-pointer overflow-hidden rounded-lg border bg-ink-800 shadow-panel transition-all duration-300',
-                isSelected
-                  ? solved
-                    ? 'border-pass/60 ring-1 ring-pass/20'
-                    : 'border-signal/60 ring-1 ring-signal/20'
-                  : 'border-ink-line hover:-translate-y-1 hover:border-signal/40 hover:shadow-lift',
+                'group relative cursor-pointer border-b border-ink-line transition-colors duration-200',
+                isSelected ? 'bg-white/[0.022]' : 'hover:bg-white/[0.014]',
               )}
             >
+              <span
+                className={cx(
+                  'absolute inset-y-0 left-0 w-[3px] transition-colors duration-200',
+                  isSelected
+                    ? solved
+                      ? 'bg-pass'
+                      : 'bg-signal'
+                    : 'bg-transparent group-hover:bg-signal/60',
+                )}
+              />
+
               {/* header */}
-              <div className="flex items-start gap-4 border-b border-ink-line bg-ink-700 p-4 sm:p-5">
+              <div className="flex items-start gap-4 px-4 pb-5 pt-6 sm:px-6">
                 <span
                   className={cx(
-                    'mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition-all duration-300',
+                    'mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full border transition-all duration-200',
                     isSelected
                       ? solved
                         ? 'border-pass bg-pass'
                         : 'border-signal bg-signal'
-                      : 'border-ink-400 group-hover:border-signal/70',
+                      : 'border-ink-400 group-hover:border-signal',
                   )}
                 >
                   {isSelected && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                      className="grid h-2.5 w-2.5 place-items-center rounded-full bg-ink-950"
+                      transition={{ type: 'spring', stiffness: 520, damping: 30 }}
+                      className="grid h-1.5 w-1.5 place-items-center rounded-full bg-ink-950"
                     />
                   )}
                 </span>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-[4px] border border-ink-edge bg-ink-900 px-2 py-[2px] font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-fg-mute">
-                      Option {String.fromCharCode(65 + idx)}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-mono text-[11px] font-bold tracking-[0.1em] text-fg-mute">
+                      {String.fromCharCode(65 + idx)}
                     </span>
-                    <span className="font-mono text-[11px] text-trace">{fix.targetFile}</span>
-                    {solved && <Chip tone="pass">Recommended</Chip>}
+                    <span className="font-mono text-[11.5px] text-trace">{fix.targetFile}</span>
+                    {solved && <Chip tone="pass">recommended</Chip>}
                   </div>
-                  <h3 className="mt-2 font-display text-[18px] font-bold leading-tight tracking-tight text-fg">
+                  <h3 className="mt-2 font-display text-[19px] font-bold leading-tight tracking-[-0.025em] text-fg">
                     {fix.title}
                   </h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-fg-dim">
+                  <p className="mt-2 max-w-[70ch] text-[13.5px] leading-[1.7] text-fg-dim">
                     {fix.description}
                   </p>
                 </div>
               </div>
 
               {/* diff */}
-              <div className="bg-ink-950 p-4 sm:p-5">
+              <div className="border-y border-ink-line bg-ink-950 px-4 py-4 sm:px-6">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-fg-mute">
+                  <span className="flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] text-fg-mute">
                     <FileCode2 className="h-3.5 w-3.5 text-trace" />
-                    Diff
+                    diff
                   </span>
-                  <span className="flex items-center gap-3 font-mono text-[10px] font-bold tnum">
+                  <span className="flex items-center gap-3 font-mono text-[11px] font-medium tnum">
                     <span className="text-fail">−{fix.diffBefore.split('\n').length}</span>
                     <span className="text-pass">+{fix.diffAfter.split('\n').length}</span>
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="space-y-px overflow-x-auto rounded-[5px] border border-fail/25 bg-fail/[0.06] p-1.5">
-                    <div className="mb-1 flex items-center gap-1.5 px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fail">
-                      Before
+                  <div className="border border-fail/25 bg-fail/[0.04]">
+                    <div className="flex items-center justify-between border-b border-fail/20 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-fail">
+                      <span>before</span>
+                      <span className="opacity-70">{fix.targetFile}</span>
                     </div>
-                    {diffBlock(fix.diffBefore, '-')}
+                    <div className="overflow-x-auto p-1.5">
+                      {diffBlock(fix.diffBefore, '-')}
+                    </div>
                   </div>
 
-                  <div className="space-y-px overflow-x-auto rounded-[5px] border border-pass/25 bg-pass/[0.06] p-1.5">
-                    <div className="mb-1 flex items-center gap-1.5 px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-pass">
-                      After
+                  <div className="border border-pass/25 bg-pass/[0.04]">
+                    <div className="flex items-center justify-between border-b border-pass/20 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-pass">
+                      <span>after</span>
+                      <span className="opacity-70">{fix.targetFile}</span>
                     </div>
-                    {diffBlock(fix.diffAfter, '+')}
+                    <div className="overflow-x-auto p-1.5">
+                      {diffBlock(fix.diffAfter, '+')}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -130,34 +144,32 @@ export const FixStage: React.FC = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.34, ease }}
                     className="overflow-hidden"
                   >
                     <div
                       className={cx(
-                        'border-t p-4 sm:p-5',
-                        fix.isCorrect
-                          ? 'border-pass/30 bg-pass/[0.07]'
-                          : 'border-signal/30 bg-signal/[0.07]',
+                        'border-l-2 px-4 py-4 sm:px-6',
+                        fix.isCorrect ? 'border-pass bg-pass/[0.04]' : 'border-signal bg-signal/[0.04]',
                       )}
                     >
                       <div
                         className={cx(
-                          'mb-1.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em]',
+                          'flex items-center gap-2 font-mono text-[11px] tracking-[0.08em]',
                           fix.isCorrect ? 'text-pass' : 'text-signal',
                         )}
                       >
                         {fix.isCorrect ? (
                           <>
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Ship it
+                            <CheckCircle2 className="h-3.5 w-3.5" /> ship it
                           </>
                         ) : (
                           <>
-                            <TriangleAlert className="h-3.5 w-3.5" /> Symptom patch
+                            <TriangleAlert className="h-3.5 w-3.5" /> symptom patch
                           </>
                         )}
                       </div>
-                      <p className="select-text text-[13px] leading-relaxed text-fg-dim">
+                      <p className="mt-2 select-text max-w-[72ch] text-[13.5px] leading-[1.7] text-fg-dim">
                         {fix.explanation}
                       </p>
                     </div>
@@ -172,26 +184,26 @@ export const FixStage: React.FC = () => {
       <AnimatePresence>
         {selectedFix && (
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 overflow-hidden rounded-lg border border-ink-edge bg-ink-800 shadow-panel"
+            transition={{ duration: 0.45, ease }}
+            className="crop relative mt-8 border border-ink-line bg-ink-850"
           >
-            <div className="h-[6px] w-full hazard" />
-            <div className="flex flex-col items-start gap-5 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="hazard h-[5px] w-full" />
+            <div className="flex flex-col items-start gap-6 px-6 py-7 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-signal">
+                <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.08em] text-signal">
                   <Check className="h-3.5 w-3.5" />
-                  Patch staged
+                  patch staged
                 </div>
-                <h3 className="mt-2 truncate font-display text-[19px] font-bold tracking-tight text-fg">
+                <h3 className="mt-3 max-w-[26ch] font-display text-[22px] font-extrabold leading-[1.05] tracking-[-0.035em] text-fg">
                   {selectedFix.title}
                 </h3>
-                <p className="mt-1.5 max-w-[54ch] text-[13px] leading-relaxed text-fg-dim">
+                <p className="mt-2 max-w-[54ch] text-[13.5px] leading-[1.7] text-fg-dim">
                   Run the regression suite to confirm the patch holds under load.
                 </p>
               </div>
-              <button onClick={() => setStage('verify')} className="group btn-primary btn-sweep shrink-0">
+              <button onClick={() => setStage('verify')} className="group btn-primary shrink-0">
                 <span>Proceed to verification</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </button>

@@ -1,17 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --ink-900: #0a0c0e;
-  --ink-800: #111417;
-  --ink-700: #161a1e;
-  --line: #21262b;
-  --signal: #ffc53d;
-  --fg: #edeff2;
-  --fg-dim: #99a2ad;
+  --ink-900: #100f0d;
+  --ink-800: #191816;
+  --ink-700: #1e1d1a;
+  --line: #24221e;
+  --signal: #e9b949;
+  --fg: #e9e4da;
+  --fg-dim: #b3ab9d;
 }
 
 * {
@@ -25,140 +25,148 @@ html {
 body {
   color: var(--fg);
   background-color: var(--ink-900);
-  font-family: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: Archivo, system-ui, -apple-system, 'Segoe UI', sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* graph-paper field used behind every screen */
+  /* drafting paper: one faint grid, nothing else */
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    radial-gradient(120% 90% at 50% -10%, rgba(255, 197, 61, 0.055), transparent 60%),
-    radial-gradient(90% 60% at 100% 100%, rgba(90, 200, 232, 0.04), transparent 65%);
-  background-size: 72px 72px, 72px 72px, 100% 100%, 100% 100%;
+    linear-gradient(to right, rgba(255, 255, 255, 0.016) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.016) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px;
   background-attachment: fixed;
 }
 
 ::selection {
-  background: rgba(255, 197, 61, 0.28);
-  color: #fff;
+  background: rgba(233, 185, 73, 0.3);
+  color: #100f0d;
 }
 
 ::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0c0e;
+  background: #100f0d;
 }
 ::-webkit-scrollbar-thumb {
-  background: #242a30;
-  border: 2px solid #0a0c0e;
+  background: #2e2b25;
+  border: 3px solid #100f0d;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #333a42;
+  background: #4a463e;
 }
 
 :focus-visible {
-  outline: 2px solid rgba(255, 197, 61, 0.7);
+  outline: 2px solid rgba(233, 185, 73, 0.8);
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer components {
-  /* ---------- surface language ---------- */
+  /* ---------- surface language: hairlines, not cards ---------- */
   .panel {
-    @apply relative rounded-lg border border-ink-line bg-ink-800 shadow-panel;
+    @apply relative rounded border border-ink-line bg-ink-800;
+    box-shadow: none;
   }
 
   .panel-head {
-    @apply flex items-center justify-between gap-3 border-b border-ink-line bg-ink-700 px-3.5 py-2.5;
+    @apply flex items-center justify-between gap-3 border-b border-ink-line bg-ink-850 px-4 py-3;
   }
 
   .label {
-    @apply font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-fg-dim;
+    @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-fg-mute;
+  }
+
+  /* mono kicker: sentence case, never shouted */
+  .kicker {
+    @apply font-mono text-[11px] font-medium tracking-[0.06em] text-fg-mute;
   }
 
   .rail-tick::before {
     content: '';
-    @apply absolute left-0 top-0 h-full w-[3px];
+    @apply absolute left-0 top-0 h-full w-[2px];
     background: repeating-linear-gradient(
       180deg,
-      var(--signal) 0 6px,
-      transparent 6px 12px
+      var(--signal) 0 5px,
+      transparent 5px 11px
     );
-    opacity: 0.75;
+    opacity: 0.6;
   }
 
-  /* ---------- hazard tape ---------- */
+  /* ---------- hazard rule — one per screen, never more ---------- */
   .hazard {
     background-image: repeating-linear-gradient(
       -45deg,
-      #ffc53d 0 9px,
-      #0a0c0e 9px 18px
+      #e9b949 0 7px,
+      #100f0d 7px 14px
     );
   }
 
   .hazard-fail {
     background-image: repeating-linear-gradient(
       -45deg,
-      #ff6b57 0 9px,
-      #0a0c0e 9px 18px
+      #d9694a 0 7px,
+      #100f0d 7px 14px
     );
   }
 
-  /* ---------- buttons ---------- */
+  /* ---------- buttons: printed, not glowing ---------- */
   .btn {
-    @apply relative inline-flex select-none items-center justify-center gap-2 overflow-hidden
-           font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-200;
+    @apply relative inline-flex select-none items-center justify-center gap-2 rounded
+           font-mono text-[11px] font-bold uppercase tracking-[0.12em] transition-all duration-150;
   }
 
   .btn-primary {
-    @apply btn bg-signal px-6 py-3.5 text-ink-950 shadow-signal;
+    @apply btn bg-signal px-6 py-3.5 text-ink-950;
     transition:
-      transform 0.14s cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.2s ease,
-      background-color 0.2s ease;
+      background-color 0.16s ease,
+      transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .btn-primary:hover {
-    background-color: #ffd160;
-    transform: translateY(-2px);
-    box-shadow: 0 16px 34px -14px rgba(255, 197, 61, 0.7);
+    background-color: #f2c860;
   }
   .btn-primary:active {
     transform: translateY(1px);
-    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.35);
   }
 
   .btn-ghost {
-    @apply btn border border-ink-edge bg-ink-700 px-5 py-3 text-fg-dim;
+    @apply btn border border-ink-edge bg-transparent px-5 py-3 text-fg-dim;
   }
   .btn-ghost:hover {
-    @apply border-signal/50 text-signal;
-    transform: translateY(-2px);
+    @apply border-fg-mute text-fg;
   }
   .btn-ghost:active {
     transform: translateY(1px);
   }
 
-  /* travelling highlight across a button */
-  .btn-sweep::after {
+  /* underline that draws itself — replaces the light sweep */
+  .btn-underline::after {
     content: '';
     position: absolute;
-    inset: 0 auto 0 0;
-    width: 34%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.45),
-      transparent
-    );
-    transform: translateX(-140%);
-    pointer-events: none;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-sweep:hover::after {
-    animation: sweep 0.85s ease-out;
+  .btn-underline:hover::after {
+    transform: scaleX(1);
   }
 
   /* ---------- textures ---------- */
@@ -169,11 +177,10 @@ body {
     pointer-events: none;
     background: repeating-linear-gradient(
       to bottom,
-      rgba(255, 255, 255, 0.035) 0 1px,
-      transparent 1px 3px
+      rgba(255, 255, 255, 0.022) 0 1px,
+      transparent 1px 4px
     );
-    opacity: 0.5;
-    mix-blend-mode: overlay;
+    opacity: 0.7;
   }
 
   .grain::after {
@@ -182,22 +189,24 @@ body {
     inset: -50%;
     z-index: 60;
     pointer-events: none;
-    opacity: 0.05;
+    opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .redacted {
-    filter: blur(5px);
+    filter: blur(4px);
     user-select: none;
-    transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .redacted-clear {
     filter: blur(0);
   }
 
+  /* ---------- letterpress stamp ---------- */
   .stamp {
-    @apply pointer-events-none absolute select-none border-[3px] font-display text-xs font-bold uppercase tracking-[0.2em];
-    opacity: 0.85;
+    @apply pointer-events-none absolute select-none rounded-sm border-2 font-mono text-[11px] font-bold uppercase tracking-[0.2em];
+    box-shadow: inset 0 0 0 1px currentColor;
+    opacity: 0.9;
   }
 
   .tnum {
@@ -208,20 +217,49 @@ body {
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.09) 12%,
-      rgba(255, 255, 255, 0.09) 88%,
+      rgba(255, 255, 255, 0.07) 8%,
+      rgba(255, 255, 255, 0.07) 92%,
       transparent
     );
     height: 1px;
   }
-}
 
-@keyframes sweep {
-  0% {
-    transform: translateX(-140%);
+  /* dotted leader, like a table of contents */
+  .leader {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+    background-size: 5px 5px;
+    background-position: 0 60%;
+    background-repeat: repeat-x;
+    height: 5px;
+    flex: 1;
   }
-  100% {
-    transform: translateX(320%);
+
+  /* margin numeral — editorial index number */
+  .idx {
+    @apply font-mono text-[13px] font-bold tabular-nums;
+    color: #4a463e;
+  }
+
+  /* registration ticks at the corners of a block */
+  .crop::before,
+  .crop::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-color: rgba(233, 185, 73, 0.55);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .crop::before {
+    top: -1px;
+    left: -1px;
+    border-width: 1px 0 0 1px;
+  }
+  .crop::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 1px 1px 0;
   }
 }
 
@@ -229,7 +267,7 @@ body {
 .meter {
   background-image: repeating-linear-gradient(
     90deg,
-    currentColor 0 8px,
-    transparent 8px 12px
+    currentColor 0 7px,
+    transparent 7px 11px
   );
 }

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useLab } from '@/context/LabContext';
-import { KeyRound, Lock, LockOpen, Sparkles } from 'lucide-react';
+import { KeyRound, Lock, LockOpen } from 'lucide-react';
 import { Panel, PanelHead, Meter, cx } from '@/components/ui/primitives';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,7 +32,7 @@ export const CluesPanel: React.FC = () => {
         }
       />
 
-      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-3">
+      <div className="min-h-0 flex-1 overflow-y-auto p-1">
         {activeChallenge.clues.map((clue, idx) => {
           const isUnlocked = unlockedClueIds.includes(clue.id);
 
@@ -42,30 +42,28 @@ export const CluesPanel: React.FC = () => {
               layout
               transition={{ duration: 0.4 }}
               className={cx(
-                'relative overflow-hidden rounded-[6px] border p-3.5 transition-colors duration-300',
-                isUnlocked
-                  ? 'border-clue/35 bg-clue/[0.07]'
-                  : 'border-ink-line bg-ink-700/60',
+                'relative overflow-hidden border-b border-ink-line px-3.5 py-3.5 transition-colors duration-200',
+                isUnlocked ? 'bg-white/[0.02]' : '',
               )}
             >
               {isUnlocked && (
-                <span className="absolute inset-y-0 left-0 w-[3px] bg-clue" />
+                <span className="absolute inset-y-0 left-0 w-[2px] bg-clue" />
               )}
 
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span
                       className={cx(
-                        'grid h-5 w-5 shrink-0 place-items-center rounded-[4px] font-mono text-[10px] font-bold',
-                        isUnlocked ? 'bg-clue text-ink-950' : 'bg-ink-600 text-fg-mute',
+                        'font-mono text-[11px] font-bold tnum',
+                        isUnlocked ? 'text-clue' : 'text-ink-400',
                       )}
                     >
-                      {idx + 1}
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
                     <h4
                       className={cx(
-                        'truncate font-display text-[14px] font-semibold tracking-tight',
+                        'truncate font-display text-[14.5px] font-bold tracking-[-0.015em]',
                         isUnlocked ? 'text-fg' : 'text-fg-dim',
                       )}
                     >
@@ -77,32 +75,30 @@ export const CluesPanel: React.FC = () => {
                 {!isUnlocked && (
                   <button
                     onClick={() => unlockClue(clue.id)}
-                    className="group flex shrink-0 items-center gap-1.5 rounded-[5px] bg-signal px-3 py-1.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-ink-950 transition-all duration-200 hover:bg-[#ffd160] active:translate-y-px"
+                    className="group flex shrink-0 items-center gap-1.5 rounded-sm bg-signal px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.06em] text-ink-950 transition-colors duration-150 hover:bg-[#f2c860] active:translate-y-px"
                   >
-                    <Lock className="h-3 w-3 transition-transform duration-200 group-hover:rotate-[-12deg]" />
-                    Reveal
+                    <Lock className="h-3 w-3 transition-transform duration-200 group-hover:-rotate-12" />
+                    reveal
                   </button>
                 )}
               </div>
 
-              <div className="mt-2.5 border-t border-dashed pt-2.5"
-                style={{ borderColor: isUnlocked ? 'rgba(255,92,168,0.28)' : 'rgba(255,255,255,0.06)' }}
-              >
+              <div className="mt-3 border-t border-dashed border-ink-edge pt-3">
                 <AnimatePresence mode="wait" initial={false}>
                   {isUnlocked ? (
                     <motion.p
                       key="open"
-                      initial={{ opacity: 0, filter: 'blur(8px)' }}
-                      animate={{ opacity: 1, filter: 'blur(0px)' }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                      className="select-text text-[12.5px] leading-relaxed text-fg-dim"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      className="select-text text-[12.5px] leading-[1.7] text-fg-dim"
                     >
                       {clue.hint}
                     </motion.p>
                   ) : (
                     <div className="flex items-center gap-2">
                       <LockOpen className="h-3 w-3 shrink-0 text-fg-mute/60" />
-                      <p className="redacted select-none text-[12.5px] leading-relaxed text-fg-mute">
+                      <p className="redacted select-none text-[12.5px] leading-[1.7] text-fg-mute">
                         {clue.hint}
                       </p>
                     </div>
@@ -114,11 +110,10 @@ export const CluesPanel: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.35 }}
-                  className="mt-2.5 flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-clue"
+                  transition={{ delay: 0.3 }}
+                  className="mt-2 font-mono text-[10px] tracking-[0.08em] text-clue"
                 >
-                  <Sparkles className="h-3 w-3" />
-                  Intel decrypted
+                  · decrypted
                 </motion.div>
               )}
             </motion.div>
@@ -126,12 +121,10 @@ export const CluesPanel: React.FC = () => {
         })}
       </div>
 
-      <div className="border-t border-ink-line bg-ink-700/60 px-3.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-fg-mute">
-        {done === total ? (
-          <span className="text-clue">All intel decrypted</span>
-        ) : (
-          <span>{total - done} sealed · costs nothing to look</span>
-        )}
+      <div className="flex items-baseline gap-2 border-t border-ink-line bg-ink-850 px-4 py-2.5 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute">
+        <span>{done === total ? 'all intel decrypted' : `${total - done} sealed`}</span>
+        <span className="leader" />
+        <span className={done === total ? 'text-clue' : ''}>costs nothing to look</span>
       </div>
     </Panel>
   );

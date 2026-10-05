@@ -89,8 +89,8 @@ export const CodeViewer: React.FC = () => {
       <div className="panel grid h-full place-items-center p-8 text-center">
         <div>
           <Braces className="mx-auto h-9 w-9 text-ink-400" />
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-fg-mute">
-            No file selected
+          <p className="mt-3 font-mono text-[11.5px] tracking-[0.06em] text-fg-mute">
+            no file selected
           </p>
         </div>
       </div>
@@ -106,13 +106,13 @@ export const CodeViewer: React.FC = () => {
   return (
     <div className="panel flex h-full flex-col overflow-hidden font-mono">
       {/* ---- tab strip ---- */}
-      <div className="flex items-center justify-between gap-3 border-b border-ink-line bg-ink-700 px-3 py-2">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex items-center gap-2 rounded-[4px] border border-signal/30 bg-signal/10 px-2.5 py-1 text-[11px] font-bold text-signal">
-            <FileCode2 className="h-3.5 w-3.5" />
+      <div className="flex items-center justify-between gap-3 border-b border-ink-line bg-ink-850 px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex min-w-0 items-center gap-2 font-mono text-[12px] text-fg">
+            <FileCode2 className="h-3.5 w-3.5 shrink-0 text-signal" />
             {activeFile.name}
           </span>
-          <span className="hidden truncate text-[10px] text-fg-mute sm:inline">
+          <span className="hidden truncate font-mono text-[10.5px] text-fg-mute sm:inline">
             {activeFile.path}
           </span>
         </div>
@@ -121,30 +121,30 @@ export const CodeViewer: React.FC = () => {
           <AnimatePresence>
             {activeFile.isSuspect && (
               <motion.span
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                className="hidden items-center gap-1.5 rounded border border-fail/40 bg-fail/10 px-2 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-fail md:flex"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="hidden items-center gap-1.5 border border-fail/50 px-2 py-1 font-mono text-[10px] tracking-[0.06em] text-fail md:flex"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-fail animate-pulse-dot" />
-                Suspect region
+                suspect region
               </motion.span>
             )}
           </AnimatePresence>
 
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-[4px] border border-ink-edge bg-ink-800 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-fg-mute transition-colors hover:border-signal/50 hover:text-signal"
+            className="flex items-center gap-1.5 border border-ink-edge px-2.5 py-1.5 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute transition-colors duration-150 hover:border-signal/60 hover:text-signal"
           >
             {copied ? (
               <>
                 <Check className="h-3 w-3 text-pass" />
-                <span className="text-pass">Copied</span>
+                <span className="text-pass">copied</span>
               </>
             ) : (
               <>
                 <Copy className="h-3 w-3" />
-                Copy
+                copy
               </>
             )}
           </button>
@@ -203,7 +203,7 @@ export const CodeViewer: React.FC = () => {
                   </span>
 
                   {isHot && (
-                    <span className="mt-1.5 shrink-0 animate-pulse-dot rounded-[3px] bg-fail px-1.5 py-[1px] text-[8.5px] font-bold uppercase tracking-[0.14em] text-ink-950 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="mt-1.5 shrink-0 border border-fail/50 px-1.5 py-[1px] font-mono text-[9.5px] text-fail opacity-0 transition-opacity group-hover:opacity-100">
                       line {lineNum}
                     </span>
                   )}
@@ -215,9 +215,9 @@ export const CodeViewer: React.FC = () => {
       </div>
 
       {/* ---- status bar ---- */}
-      <div className="flex items-center justify-between border-t border-ink-line bg-ink-700 px-3.5 py-1.5 text-[10px] text-fg-mute">
-        <div className="flex items-center gap-3.5">
-          <span>UTF-8</span>
+      <div className="flex items-center justify-between gap-3 border-t border-ink-line bg-ink-850 px-4 py-2 font-mono text-[10.5px] tracking-[0.04em] text-fg-mute">
+        <div className="flex items-center gap-4">
+          <span>utf-8</span>
           <span className="uppercase">{activeFile.language}</span>
           <span className="tnum">{lines.length} ln</span>
           {activeFile.isSuspect && (
@@ -227,7 +227,8 @@ export const CodeViewer: React.FC = () => {
             </span>
           )}
         </div>
-        <span>
+        <span className="flex items-baseline gap-2">
+          <span className="leader hidden sm:block" />
           <span className="text-signal">⎇</span> bug-hunt/fix-branch
         </span>
       </div>

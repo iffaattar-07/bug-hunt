@@ -45,10 +45,10 @@ export default function Home() {
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={stage}
-          initial={{ opacity: 0, x: dir * 28, filter: 'blur(5px)' }}
-          animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, x: dir * -22, filter: 'blur(5px)' }}
-          transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, x: dir * 18 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: dir * -12 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           {VIEWS[stage]}
         </motion.div>
