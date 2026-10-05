@@ -179,10 +179,10 @@ export const LabProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTestRunnerState('running');
     setTestCases(activeChallenge.tests.map(t => ({ ...t, status: 'pending' })));
 
-    let currentIdx = 0;
+    const totalTests = activeChallenge.tests.length;
 
-    const runNextTest = () => {
-      if (currentIdx >= activeChallenge.tests.length) {
+    const runNextTest = (idx: number) => {
+      if (idx >= totalTests) {
         // All tests finished
         setTestRunnerState('completed');
         soundFX.playSuccess();
@@ -197,8 +197,8 @@ export const LabProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           cluesUnlockedCount: unlockedClueIds.length,
           diagnosisSelected: selectedDiagnosis,
           fixSelected: selectedFix,
-          testsPassedCount: activeChallenge.tests.length,
-          totalTestsCount: activeChallenge.tests.length,
+          testsPassedCount: totalTests,
+          totalTestsCount: totalTests,
           rootCauseSummary: selectedDiagnosis.description,
           technicalImpact: activeChallenge.tagline,
           fixAppliedSummary: selectedFix.explanation,
@@ -212,23 +212,22 @@ export const LabProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
-      const test = activeChallenge.tests[currentIdx];
+      const test = activeChallenge.tests[idx];
 
       setTestCases((prev) =>
-        prev.map((t, idx) => (idx === currentIdx ? { ...t, status: 'running' } : t))
+        prev.map((t, i) => (i === idx ? { ...t, status: 'running' } : t))
       );
       soundFX.playTestRun();
 
       setTimeout(() => {
         setTestCases((prev) =>
-          prev.map((t, idx) => (idx === currentIdx ? { ...t, status: 'passed' } : t))
+          prev.map((t, i) => (i === idx ? { ...t, status: 'passed' } : t))
         );
-        currentIdx++;
-        setTimeout(runNextTest, 250);
+        setTimeout(() => runNextTest(idx + 1), 250);
       }, test.durationMs);
     };
 
-    setTimeout(runNextTest, 400);
+    setTimeout(() => runNextTest(0), 400);
   }, [activeChallenge, selectedDiagnosis, selectedFix, elapsedSeconds, attemptsCount, unlockedClueIds]);
 
   const resetLab = useCallback(() => {
