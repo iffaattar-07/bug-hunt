@@ -93,15 +93,22 @@ export const ChallengeSelection: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: idx * 0.05, duration: 0.4, ease }}
+                onPointerMove={(e) => {
+                  if (e.pointerType !== 'mouse') return;
+                  const el = e.currentTarget;
+                  const r = el.getBoundingClientRect();
+                  el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+                  el.style.setProperty('--my', `${e.clientY - r.top}px`);
+                }}
                 className={cx(
-                  'group relative flex flex-col border-b border-r border-ink-line bg-ink-850/40 transition-colors duration-200',
-                  isCompleted ? '' : 'hover:bg-ink-800',
+                  'group relative flex flex-col border-b border-r border-ink-line transition-colors duration-200',
+                  isCompleted ? 'bg-ink-850/40' : 'bg-ink-850/40 hover:bg-ink-800',
                 )}
               >
                 {/* rule that draws in on hover */}
                 <span className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 bg-signal transition-transform duration-500 ease-out group-hover:scale-x-100" />
 
-                <div className="relative flex flex-1 flex-col p-6 pt-7">
+                <div className="spotlight relative flex flex-1 flex-col p-6 pt-7">
                   {isCompleted && (
                     <div className="pointer-events-none absolute right-5 top-6">
                       <div

@@ -133,6 +133,16 @@ export const DiagnosisStage: React.FC = () => {
                 )}
               />
 
+              {/* confirmation wipes across the committed row */}
+              {correctPick && (
+                <motion.span
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.55, ease }}
+                  className="absolute inset-x-0 top-0 h-[2px] origin-left bg-pass"
+                />
+              )}
+
               {/* letter in the margin */}
               <span
                 className={cx(

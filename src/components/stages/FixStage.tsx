@@ -3,21 +3,32 @@
 import React from 'react';
 import { useLab } from '@/context/LabContext';
 import { FileCode2, ArrowRight, GitCompare, Check, TriangleAlert, CheckCircle2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { SectionHead, Chip, cx, DiffLine } from '@/components/ui/primitives';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+const STACK = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.035, delayChildren: 0.12 } },
+};
+
+const LINE = {
+  hidden: { opacity: 0, x: -8 },
+  shown: { opacity: 1, x: 0, transition: { duration: 0.34, ease } },
+};
+
 export const FixStage: React.FC = () => {
   const { activeChallenge, selectedFix, submitFix, setStage } = useLab();
+  const reduce = useReducedMotion();
 
   if (!activeChallenge) return null;
 
   const diffBlock = (raw: string, sign: '-' | '+') =>
     raw.split('\n').map((l, i) => (
-      <DiffLine key={i} sign={sign}>
-        {l}
-      </DiffLine>
+      <motion.div key={i} variants={LINE}>
+        <DiffLine sign={sign}>{l}</DiffLine>
+      </motion.div>
     ));
 
   return (
@@ -120,9 +131,14 @@ export const FixStage: React.FC = () => {
                       <span>before</span>
                       <span className="opacity-70">{fix.targetFile}</span>
                     </div>
-                    <div className="overflow-x-auto p-1.5">
+                    <motion.div
+                      initial={reduce ? 'shown' : 'hidden'}
+                      animate="shown"
+                      variants={STACK}
+                      className="overflow-x-auto p-1.5"
+                    >
                       {diffBlock(fix.diffBefore, '-')}
-                    </div>
+                    </motion.div>
                   </div>
 
                   <div className="border border-pass/25 bg-pass/[0.04]">
@@ -130,9 +146,14 @@ export const FixStage: React.FC = () => {
                       <span>after</span>
                       <span className="opacity-70">{fix.targetFile}</span>
                     </div>
-                    <div className="overflow-x-auto p-1.5">
+                    <motion.div
+                      initial={reduce ? 'shown' : 'hidden'}
+                      animate="shown"
+                      variants={STACK}
+                      className="overflow-x-auto p-1.5"
+                    >
                       {diffBlock(fix.diffAfter, '+')}
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useLab } from '@/context/LabContext';
 import { FileCode2, Copy, Check, TriangleAlert, Braces } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cx } from '@/components/ui/primitives';
 
 const KEYWORDS = [
@@ -78,6 +78,7 @@ const tokCls: Record<string, string> = {
 export const CodeViewer: React.FC = () => {
   const { activeFile } = useLab();
   const [copied, setCopied] = useState(false);
+  const reduce = useReducedMotion();
 
   const lines = useMemo(
     () => (activeFile ? activeFile.content.split('\n') : []),
@@ -152,30 +153,53 @@ export const CodeViewer: React.FC = () => {
       </div>
 
       {/* ---- code body ---- */}
-      <div key={activeFile.path} className="relative min-h-0 flex-1 overflow-auto bg-ink-950">
-        <AnimatePresence>
-          <motion.div
-            key={activeFile.path}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="min-w-full py-3 text-[12.5px] leading-[1.75]"
-          >
-            {lines.map((line, idx) => {
-              const lineNum = idx + 1;
-              const isHot = activeFile.highlightLines?.includes(lineNum);
-              const toks = tokenize(line, activeFile.language);
+      <div className="relative min-h-0 flex-1 overflow-auto bg-ink-950 crosshair">
+        {/* a light sweeps down the file each time it opens */}
+        {!reduce && (
+          <motion.span
+            key={`scan-${activeFile.path}`}
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 z-10 h-px bg-gradient-to-r from-transparent via-signal/70 to-transparent"
+            initial={{ top: '0%', opacity: 0.9 }}
+            animate={{ top: '100%', opacity: 0 }}
+            transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
+          />
+        )}
 
-              return (
-                <div
-                  key={lineNum}
-                  className={cx(
-                    'group relative flex items-start gap-4 border-l-2 pr-4 transition-colors',
-                    isHot
-                      ? 'border-fail bg-fail/10'
-                      : 'border-transparent hover:border-ink-edge hover:bg-white/[0.025]',
-                  )}
-                >
+        <motion.div
+          key={activeFile.path}
+          initial={reduce ? 'shown' : 'hidden'}
+          animate="shown"
+          className="min-w-full py-3 text-[12.5px] leading-[1.75]"
+        >
+          {lines.map((line, idx) => {
+            const lineNum = idx + 1;
+            const isHot = activeFile.highlightLines?.includes(lineNum);
+            const toks = tokenize(line, activeFile.language);
+
+            return (
+              <motion.div
+                key={lineNum}
+                custom={idx}
+                variants={{
+                  hidden: { opacity: 0, x: -6 },
+                  shown: (i: number) => ({
+                    opacity: 1,
+                    x: 0,
+                    transition: {
+                      delay: Math.min(i * 0.013, 0.55),
+                      duration: 0.32,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  }),
+                }}
+                className={cx(
+                  'group relative flex items-start gap-4 border-l-2 pr-4 transition-colors',
+                  isHot
+                    ? 'border-fail bg-fail/10'
+                    : 'border-transparent hover:border-ink-edge hover:bg-white/[0.025]',
+                )}
+              >
                   <span
                     className={cx(
                       'w-11 shrink-0 select-none border-r pr-3 text-right tnum',
@@ -207,11 +231,10 @@ export const CodeViewer: React.FC = () => {
                       line {lineNum}
                     </span>
                   )}
-                </div>
-              );
-            })}
-          </motion.div>
-        </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
 
       {/* ---- status bar ---- */}

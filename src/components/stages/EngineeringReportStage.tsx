@@ -228,8 +228,25 @@ ${finalReport.preventionStrategy}
         </div>
 
         {/* footer */}
-        <div className="flex flex-wrap items-baseline gap-2 border-t border-ink-line bg-ink-950 px-6 py-4 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute sm:px-9">
+        <div className="flex flex-wrap items-center gap-3 border-t border-ink-line bg-ink-950 px-6 py-4 font-mono text-[10.5px] tracking-[0.06em] text-fg-mute sm:px-9">
           <span>signed · on-call investigator</span>
+          <svg
+            viewBox="0 0 168 40"
+            aria-hidden
+            className="h-8 w-[150px] shrink-0 text-signal"
+            fill="none"
+          >
+            <motion.path
+              d="M4 28C14 10 20 34 30 22S46 6 54 24s14 12 22-2 16-14 24 2 16 10 24-4 18-6 30 2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0.2 }}
+              whileInView={{ pathLength: 1, opacity: 1 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 1.5, ease }}
+            />
+          </svg>
           <span className="leader" />
           <span className="text-signal">
             {new Date(finalReport.timestamp).toLocaleString()}

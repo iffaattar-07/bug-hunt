@@ -9,12 +9,67 @@ import {
   ArrowRight,
   Terminal,
   Timer,
+  Bug,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { SectionHead, Chip, cx, Counter, Stamp } from '@/components/ui/primitives';
 
 const ease = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * The signature beat: a bug scurries across the completed panel, gets
+ * flattened on arrival and leaves an impact ring behind.
+ */
+const BugSquash: React.FC = () => {
+  const [phase, setPhase] = useState<'run' | 'squash' | 'gone'>('run');
+  const reduce = useReducedMotion();
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      <motion.div
+        className="absolute top-1/2 -mt-5 text-fail"
+        initial={{ left: '-6%', opacity: 0 }}
+        animate={
+          phase === 'run'
+            ? { left: '50%', opacity: 1, scaleY: 1, scaleX: 1 }
+            : phase === 'squash'
+              ? { left: '50%', opacity: 1, scaleY: 0.08, scaleX: 1.8, y: 8 }
+              : { left: '50%', opacity: 0, scaleY: 0.08, scaleX: 1.8, y: 8 }
+        }
+        transition={
+          phase === 'run'
+            ? { left: { duration: 0.85, ease: 'linear' }, opacity: { duration: 0.15 } }
+            : { duration: 0.14, ease: [0.4, 0, 1, 1] }
+        }
+        onAnimationComplete={() => {
+          setPhase((p) => (p === 'run' ? 'squash' : p === 'squash' ? 'gone' : p));
+        }}
+      >
+        <motion.span
+          animate={reduce ? undefined : { rotate: [12, -12, 12, -12], y: [0, -3, 0, -3] }}
+          transition={{ duration: 0.16, repeat: Infinity, ease: 'easeInOut' }}
+          className="block"
+        >
+          <Bug className="h-6 w-6" />
+        </motion.span>
+      </motion.div>
+
+      {/* impact ring */}
+      <AnimatePresence>
+        {phase === 'squash' && (
+          <motion.span
+            className="absolute top-1/2 -mt-6 h-12 w-12 rounded-full border-2 border-signal"
+            initial={{ left: '50%', x: '-50%', scale: 0.2, opacity: 0.9 }}
+            animate={{ scale: 2.6, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export const VerificationStage: React.FC = () => {
   const {
@@ -26,24 +81,34 @@ export const VerificationStage: React.FC = () => {
     setStage,
   } = useLab();
   const [flash, setFlash] = useState(false);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     if (testRunnerState === 'completed') {
       setFlash(true);
       const t = setTimeout(() => setFlash(false), 900);
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#E9B949', '#7FB069', '#CBBDA6'],
-        });
-      } catch {
-        /* noop */
-      }
-      return () => clearTimeout(t);
+      /* confetti waits for the squash to land */
+      const c = setTimeout(
+        () => {
+          try {
+            confetti({
+              particleCount: 90,
+              spread: 72,
+              origin: { y: 0.62 },
+              colors: ['#E9B949', '#7FB069', '#CBBDA6'],
+            });
+          } catch {
+            /* noop */
+          }
+        },
+        reduce ? 0 : 1050,
+      );
+      return () => {
+        clearTimeout(t);
+        clearTimeout(c);
+      };
     }
-  }, [testRunnerState]);
+  }, [testRunnerState, reduce]);
 
   if (!activeChallenge || !selectedFix) return null;
 
@@ -136,10 +201,15 @@ export const VerificationStage: React.FC = () => {
           {/* segmented progress — reads as a meter, not a gradient */}
           <div className="flex h-2 w-full gap-[3px] overflow-hidden">
             {Array.from({ length: Math.max(total, 1) }).map((_, i) => (
-              <span
+              <motion.span
                 key={i}
+                animate={{
+                  scaleY: i < passed ? 1 : 0.55,
+                  opacity: i < passed ? 1 : 0.75,
+                }}
+                transition={{ duration: 0.4, ease, delay: i < passed ? 0.04 : 0 }}
                 className={cx(
-                  'h-full flex-1 transition-colors duration-300',
+                  'h-full flex-1 origin-bottom',
                   i < passed ? 'bg-pass' : 'bg-ink-600',
                 )}
               />
@@ -154,7 +224,13 @@ export const VerificationStage: React.FC = () => {
         </div>
 
         {/* specs */}
-        <div className="divide-y divide-ink-line bg-ink-950">
+        <div className="relative divide-y divide-ink-line bg-ink-950">
+          {testRunnerState === 'running' && !reduce && (
+            <span
+              aria-hidden
+              className="animate-sweep-y pointer-events-none absolute inset-x-0 z-10 h-px bg-gradient-to-r from-transparent via-signal to-transparent"
+            />
+          )}
           {testCases.map((tc, idx) => (
             <motion.div
               key={tc.id}
@@ -181,7 +257,14 @@ export const VerificationStage: React.FC = () => {
                   )}
                 >
                   {tc.status === 'passed' ? (
-                    <Check className="h-4 w-4" />
+                    <motion.span
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 520, damping: 18 }}
+                      className="inline-flex"
+                    >
+                      <Check className="h-4 w-4" />
+                    </motion.span>
                   ) : tc.status === 'running' ? (
                     <FlaskConical className="h-4 w-4 animate-spin" />
                   ) : (
@@ -242,6 +325,7 @@ export const VerificationStage: React.FC = () => {
           >
             <div className="hazard h-[5px] w-full" />
             <div className="relative flex flex-col items-center gap-6 px-6 py-10 text-center">
+              {!reduce && <BugSquash />}
               <Stamp text="verified" tone="pass" className="left-6 top-7 sm:left-10" />
 
               <div className="mt-4">
