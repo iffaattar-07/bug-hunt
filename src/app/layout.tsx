@@ -4,8 +4,9 @@ import { LabProvider } from '@/context/LabContext';
 import { Navbar } from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Bug Hunt | Interactive Developer Debugging Lab',
-  description: 'Find the bug. Understand the failure. Prove the fix. An interactive developer debugging lab.',
+  title: 'Bug Hunt | Field Ops Debug Lab',
+  description:
+    'Find the bug. Prove the fix. An interactive field-ops lab for real software engineering debugging.',
 };
 
 export default function RootLayout({
@@ -15,12 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-dev-bg text-dev-text antialiased min-h-screen flex flex-col font-sans">
+      <body className="grain flex min-h-screen flex-col bg-ink-900 font-sans text-fg antialiased">
         <LabProvider>
           <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
+          <main className="flex-1">{children}</main>
         </LabProvider>
       </body>
     </html>
