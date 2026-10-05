@@ -12,6 +12,8 @@
   --signal: #e9b949;
   --fg: #e9e4da;
   --fg-dim: #b3ab9d;
+  /* the accent as a gradient — used for lit surfaces */
+  --signal-grad: linear-gradient(180deg, #f7d071 0%, #e9b949 46%, #d9a336 100%);
 }
 
 * {
@@ -36,6 +38,21 @@ body {
     linear-gradient(to bottom, rgba(255, 255, 255, 0.016) 1px, transparent 1px);
   background-size: 96px 96px, 96px 96px;
   background-attachment: fixed;
+}
+
+/* the atmosphere layer: warm washes + vignette, parallaxed on scroll.
+   negative z-index keeps it above the canvas background, below all content. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+}
+.backdrop-wash {
+  position: absolute;
+  inset: -12%;
+  will-change: transform;
 }
 
 ::selection {
@@ -130,16 +147,19 @@ body {
   }
 
   .btn-primary {
-    @apply btn bg-signal px-6 py-3.5 text-ink-950;
+    @apply btn px-6 py-3.5 text-ink-950;
+    background-image: var(--signal-grad);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
     transition:
-      background-color 0.16s ease,
-      transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+      transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.16s ease;
   }
   .btn-primary:hover {
-    background-color: #f2c860;
+    filter: brightness(1.07) saturate(1.05);
   }
   .btn-primary:active {
     transform: translateY(1px);
+    filter: brightness(0.96);
   }
 
   .btn-ghost {
@@ -270,4 +290,86 @@ body {
     currentColor 0 7px,
     transparent 7px 11px
   );
+}
+
+/* ---------- motion + light ---------- */
+
+/* lit gold text: gradient clipped to glyphs, never a flat fill */
+.grad-gold {
+  background-image: var(--signal-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* gradient hairline — the accent as a fade, not a bar */
+.hairline-gold {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(233, 185, 73, 0.75) 12%,
+    rgba(233, 185, 73, 0.75) 88%,
+    transparent
+  );
+  height: 1px;
+}
+
+/* marquee band */
+.ticker {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee 38s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+/* pointer-tracked light on cards — set --mx/--my from JS */
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(233, 185, 73, 0.11),
+    transparent 62%
+  );
+}
+.group:hover .spotlight::after,
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+/* outlined display type for the parallax ghost words */
+.text-ghost {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(233, 185, 73, 0.16);
+}
+
+.crosshair {
+  cursor: crosshair;
+}
+
+/* custom cursor owns the pointer on precise devices only */
+.cursor-none,
+.cursor-none * {
+  cursor: none !important;
 }

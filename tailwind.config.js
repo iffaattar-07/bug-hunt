@@ -22,10 +22,11 @@ module.exports = {
           line: '#24221E',
           edge: '#33302A',
         },
-        // ochre — the one accent
+        // gold — the one accent (gradient stops for lit surfaces)
         signal: {
           DEFAULT: '#E9B949',
-          deep: '#C99A2E',
+          hi: '#F7D071',
+          deep: '#D9A336',
           dim: 'rgba(233,185,73,0.10)',
         },
         pass: {
@@ -97,6 +98,24 @@ module.exports = {
           '0%': { transform: 'scaleX(0)' },
           '100%': { transform: 'scaleX(1)' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'sweep-y': {
+          '0%': { top: '0%', opacity: '0' },
+          '10%': { opacity: '1' },
+          '100%': { top: '97%', opacity: '0' },
+        },
+        'stamp-hit': {
+          '0%': { transform: 'scale(2.4) rotate(-24deg)', opacity: '0' },
+          '60%': { transform: 'scale(0.94) rotate(-7deg)', opacity: '1' },
+          '100%': { transform: 'scale(1) rotate(-7deg)', opacity: '1' },
+        },
+        'draw-line': {
+          from: { 'stroke-dashoffset': 'var(--dash, 480)' },
+          to: { 'stroke-dashoffset': '0' },
+        },
       },
       animation: {
         blink: 'blink 1.05s steps(1,end) infinite',
@@ -104,6 +123,10 @@ module.exports = {
         'pulse-dot': 'pulse-dot 2.4s ease-in-out infinite',
         'rise-in': 'rise-in 0.5s cubic-bezier(.16,1,.3,1) both',
         wipe: 'wipe 0.5s cubic-bezier(.16,1,.3,1) both',
+        marquee: 'marquee 38s linear infinite',
+        'sweep-y': 'sweep-y 1.6s cubic-bezier(.4,0,.2,1) infinite',
+        'stamp-hit': 'stamp-hit 0.5s cubic-bezier(.2,1.2,.3,1) both',
+        'draw-line': 'draw-line 1.4s cubic-bezier(.16,1,.3,1) both',
       },
       transitionTimingFunction: {
         out: 'cubic-bezier(0.16, 1, 0.3, 1)',
