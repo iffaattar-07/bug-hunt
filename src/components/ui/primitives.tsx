@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 
 export const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(' ');
@@ -155,8 +155,11 @@ export const Counter: React.FC<{
   suffix?: string;
 }> = ({ to, duration = 900, className, suffix = '' }) => {
   const [n, setN] = useState(0);
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.5 });
 
   useEffect(() => {
+    if (!inView) return;
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -177,10 +180,10 @@ export const Counter: React.FC<{
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
+  }, [to, duration, inView]);
 
   return (
-    <span className={cx('tnum', className)}>
+    <span ref={ref} className={cx('tnum', className)}>
       {n}
       {suffix}
     </span>

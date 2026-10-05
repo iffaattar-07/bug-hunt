@@ -15,7 +15,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { LabStage } from '@/types/challenge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { cx, Meter } from '@/components/ui/primitives';
 
 const MISSION: { id: LabStage; short: string; icon: React.ReactNode }[] = [
@@ -73,8 +73,17 @@ export const Navbar: React.FC = () => {
     return { ...m, active, disabled, idx: i };
   });
 
+  /* scroll tells you how far into the mission you are */
+  const { scrollYProgress } = useScroll();
+  const readProgress = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.35 });
+
   return (
     <header className="sticky top-0 z-50 border-b border-ink-line bg-ink-900/95 backdrop-blur-sm select-none">
+      <motion.span
+        aria-hidden
+        style={{ scaleX: readProgress }}
+        className="hairline-gold absolute inset-x-0 top-0 h-[2px] origin-left"
+      />
       <div className="mx-auto flex h-[60px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6">
         {/* ---- brand ---- */}
         <button
@@ -107,16 +116,22 @@ export const Navbar: React.FC = () => {
               {lockedStages.map((st, i) => (
                 <React.Fragment key={st.id}>
                   {i > 0 && (
-                    <span
+                    <motion.span
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: 0.05 * i, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       className={cx(
-                        'h-px w-5 shrink-0 transition-colors duration-300',
+                        'h-px w-5 shrink-0 origin-left transition-colors duration-300',
                         currentIdx >= i ? 'bg-signal/70' : 'bg-ink-edge',
                       )}
                     />
                   )}
-                  <button
+                  <motion.button
                     disabled={st.disabled}
                     onClick={() => setStage(st.id)}
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 * i, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     className={cx(
                       'relative flex shrink-0 items-center gap-1.5 px-2.5 py-2 font-mono text-[11px] tracking-[0.03em] transition-colors duration-150',
                       st.active
@@ -126,7 +141,11 @@ export const Navbar: React.FC = () => {
                           : 'text-fg-mute hover:text-fg',
                     )}
                   >
-                    <span
+                    <motion.span
+                      key={currentIdx > st.idx ? 'done' : 'pending'}
+                      initial={{ scale: currentIdx > st.idx ? 0.5 : 1 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 520, damping: 20 }}
                       className={cx(
                         'grid h-[17px] w-[17px] place-items-center rounded-sm text-[9px] font-bold',
                         st.active
@@ -137,7 +156,7 @@ export const Navbar: React.FC = () => {
                       )}
                     >
                       {currentIdx > st.idx ? '✓' : st.idx + 1}
-                    </span>
+                    </motion.span>
                     <span className="hidden xl:inline">{st.short}</span>
                     {st.active && (
                       <motion.span
@@ -146,7 +165,7 @@ export const Navbar: React.FC = () => {
                         className="absolute inset-x-1 -bottom-[1px] h-[2px] bg-signal"
                       />
                     )}
-                  </button>
+                  </motion.button>
                 </React.Fragment>
               ))}
             </motion.nav>
@@ -163,7 +182,20 @@ export const Navbar: React.FC = () => {
                   <div className="flex items-baseline gap-1.5 font-mono text-[9.5px] tracking-[0.08em] text-fg-mute">
                     <span>score</span>
                     <span className="leader" />
-                    <span className="tnum text-signal">{xp}</span>
+                    <span className="relative block h-[14px] w-[3ch] overflow-hidden text-right leading-[14px] text-signal tnum">
+                      <AnimatePresence initial={false}>
+                        <motion.span
+                          key={xp}
+                          initial={{ y: '110%' }}
+                          animate={{ y: '0%' }}
+                          exit={{ y: '-110%' }}
+                          transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+                          className="absolute inset-0"
+                        >
+                          {xp}
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
                   </div>
                   <Meter
                     value={xp}
@@ -172,9 +204,15 @@ export const Navbar: React.FC = () => {
                     className="mt-1.5 h-[4px] w-full"
                   />
                 </div>
-                <span className="grid h-6 w-6 place-items-center rounded-sm border border-signal/50 font-mono text-[11px] font-bold text-signal">
+                <motion.span
+                  key={rank}
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 460, damping: 20 }}
+                  className="grid h-6 w-6 place-items-center rounded-sm border border-signal/50 font-mono text-[11px] font-bold text-signal"
+                >
                   {rank}
-                </span>
+                </motion.span>
               </div>
 
               {/* timer */}
