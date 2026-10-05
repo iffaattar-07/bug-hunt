@@ -2,17 +2,27 @@
 
 import React, { useState } from 'react';
 import { useLab } from '@/context/LabContext';
-import { 
-  FileText, 
-  Clock, 
-  HelpCircle, 
-  ShieldCheck, 
-  Copy, 
-  Check, 
-  RotateCcw, 
-  Layers 
+import {
+  FileText,
+  Timer,
+  HelpCircle,
+  ShieldCheck,
+  Copy,
+  Check,
+  RotateCcw,
+  Layers,
+  KeyRound,
+  Download,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Chip, Counter, cx, SectionHead } from '@/components/ui/primitives';
+
+const SECTIONS = [
+  { key: 'impact', n: '01', label: 'Executive summary & impact', tone: 'signal' },
+  { key: 'cause', n: '02', label: 'Confirmed root cause', tone: 'clue' },
+  { key: 'solution', n: '03', label: 'Implemented solution', tone: 'trace' },
+  { key: 'prevention', n: '04', label: 'Prevention strategy', tone: 'pass' },
+] as const;
 
 export const EngineeringReportStage: React.FC = () => {
   const { finalReport, resetLab } = useLab();
@@ -20,17 +30,13 @@ export const EngineeringReportStage: React.FC = () => {
 
   if (!finalReport) return null;
 
-  const formatTime = (secs: number) => {
-    const mins = Math.floor(secs / 60);
-    const remaining = secs % 60;
-    return `${mins}m ${remaining}s`;
-  };
+  const formatTime = (secs: number) =>
+    `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`;
 
-  const generateMarkdownReport = () => {
-    return `# Incident Post-Mortem: ${finalReport.challengeTitle}
+  const markdown = `# Incident Post-Mortem: ${finalReport.challengeTitle}
 
 **Date**: ${new Date(finalReport.timestamp).toLocaleDateString()}
-**Severity / Difficulty**: ${finalReport.difficulty.toUpperCase()}
+**Severity**: ${finalReport.difficulty.toUpperCase()}
 **Language**: ${finalReport.language}
 **Status**: VERIFIED & RESOLVED
 
@@ -54,150 +60,191 @@ ${finalReport.fixAppliedSummary}
 ## Prevention Strategy
 ${finalReport.preventionStrategy}
 `;
-  };
 
-  const handleCopyMarkdown = () => {
-    navigator.clipboard.writeText(generateMarkdownReport());
+  const handleCopy = () => {
+    navigator.clipboard.writeText(markdown);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const metrics = [
+    { icon: <Timer className="h-3.5 w-3.5" />, label: 'Time elapsed', value: formatTime(finalReport.durationSeconds), raw: false, tone: 'text-signal' },
+    { icon: <HelpCircle className="h-3.5 w-3.5" />, label: 'Attempts', value: finalReport.attemptsCount, raw: true, tone: 'text-clue' },
+    { icon: <KeyRound className="h-3.5 w-3.5" />, label: 'Clues used', value: finalReport.cluesUnlockedCount, raw: true, tone: 'text-trace' },
+    { icon: <ShieldCheck className="h-3.5 w-3.5" />, label: 'Specs passed', value: finalReport.totalTestsCount, raw: true, tone: 'text-pass' },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6 text-[#F0F6FC]">
-      
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363D] pb-5">
-        <div>
-          <div className="inline-flex items-center gap-2 text-xs font-mono text-[#58A6FF] mb-1">
-            <FileText className="w-3.5 h-3.5" />
-            <span>POST-MORTEM INCIDENT REPORT</span>
+    <div className="mx-auto w-full max-w-[980px] px-4 py-9 sm:px-6">
+      <SectionHead
+        tone="pass"
+        kicker="Stage 5 / 5 — Case closed"
+        title={<>Post-mortem: {finalReport.challengeTitle}</>}
+        desc="Filed automatically from your run. Export it as Markdown and drop it straight into your team's incident channel."
+        right={
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-2 rounded-[5px] border border-ink-edge bg-ink-800 px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-fg-dim transition-all duration-200 hover:-translate-y-0.5 hover:border-signal/50 hover:text-signal"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-pass" />
+                  <span className="text-pass">Copied</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-3.5 w-3.5" />
+                  Export .md
+                </>
+              )}
+            </button>
+            <button
+              onClick={resetLab}
+              className="flex items-center gap-2 rounded-[5px] bg-signal px-4 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-ink-950 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#ffd160]"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Next case
+            </button>
           </div>
-          <h1 className="text-2xl font-bold text-[#F0F6FC] font-sans tracking-tight">
-            Engineering Report: {finalReport.challengeTitle}
-          </h1>
-        </div>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleCopyMarkdown}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#21262D] border border-[#30363D] hover:border-[#484F58] text-[#58A6FF] font-mono text-xs font-semibold transition-colors"
+      {/* metrics */}
+      <div className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {metrics.map((m, i) => (
+          <motion.div
+            key={m.label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.07, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="group relative overflow-hidden rounded-lg border border-ink-line bg-ink-800 p-4 shadow-panel transition-colors hover:border-ink-edge"
           >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-[#3FB950]" />
-                <span className="text-[#3FB950]">COPIED</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5" />
-                <span>EXPORT MARKDOWN</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={resetLab}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#238636] text-white font-mono text-xs font-semibold hover:bg-[#2ea043] transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>NEXT CHALLENGE</span>
-          </button>
-        </div>
+            <span className="absolute inset-x-0 top-0 h-[3px] scale-x-0 bg-signal transition-transform duration-500 group-hover:scale-x-100" />
+            <div className={cx('flex items-center gap-1.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-fg-mute', m.tone)}>
+              {m.icon}
+              {m.label}
+            </div>
+            <div className="mt-2.5 font-display text-[26px] font-bold leading-none tracking-tight text-fg">
+              {m.raw ? <Counter to={m.value as number} /> : <span className="tnum">{m.value}</span>}
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Metrics Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-lg bg-[#161B22] border border-[#30363D] font-mono space-y-1">
-          <div className="text-[#8B949E] text-[10px] flex items-center gap-1">
-            <Clock className="w-3 h-3 text-[#D29922]" />
-            <span>TIME ELAPSED</span>
-          </div>
-          <div className="text-lg font-bold text-[#F0F6FC]">{formatTime(finalReport.durationSeconds)}</div>
-        </div>
-
-        <div className="p-3.5 rounded-lg bg-[#161B22] border border-[#30363D] font-mono space-y-1">
-          <div className="text-[#8B949E] text-[10px] flex items-center gap-1">
-            <HelpCircle className="w-3 h-3 text-[#BC8CFF]" />
-            <span>DIAGNOSIS ATTEMPTS</span>
-          </div>
-          <div className="text-lg font-bold text-[#F0F6FC]">{finalReport.attemptsCount}</div>
-        </div>
-
-        <div className="p-3.5 rounded-lg bg-[#161B22] border border-[#30363D] font-mono space-y-1">
-          <div className="text-[#8B949E] text-[10px] flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-[#3FB950]" />
-            <span>TESTS PASSED</span>
-          </div>
-          <div className="text-lg font-bold text-[#3FB950]">
-            {finalReport.testsPassedCount} / {finalReport.totalTestsCount}
-          </div>
-        </div>
-
-        <div className="p-3.5 rounded-lg bg-[#161B22] border border-[#30363D] font-mono space-y-1">
-          <div className="text-[#8B949E] text-[10px] flex items-center gap-1">
-            <Layers className="w-3 h-3 text-[#58A6FF]" />
-            <span>DIFFICULTY</span>
-          </div>
-          <div className="text-lg font-bold text-[#F0F6FC] uppercase">{finalReport.difficulty}</div>
-        </div>
-      </div>
-
-      {/* Main Report Document Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
+      {/* report document */}
+      <motion.article
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="p-6 rounded-lg bg-[#161B22] border border-[#30363D] space-y-6 font-sans"
+        transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mt-5 overflow-hidden rounded-lg border border-ink-line bg-ink-800 shadow-lift"
       >
-        
-        {/* Section 1: Executive Summary */}
-        <div className="space-y-1.5 border-b border-[#30363D] pb-5">
-          <h2 className="text-xs font-mono font-bold text-[#58A6FF] uppercase tracking-wider">
-            1. EXECUTIVE SUMMARY & IMPACT
-          </h2>
-          <p className="text-sm text-[#C9D1D9] leading-relaxed">
-            {finalReport.technicalImpact}
-          </p>
-        </div>
+        {/* document masthead */}
+        <div className="relative border-b border-ink-line bg-ink-700 px-6 py-6 sm:px-9">
+          <div className="absolute inset-x-0 top-0 h-[6px] hazard" />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-signal">
+                <FileText className="h-3.5 w-3.5" />
+                Incident report
+              </div>
+              <h2 className="mt-2.5 max-w-[24ch] font-display text-[26px] font-bold leading-[1.1] tracking-tight text-fg">
+                {finalReport.challengeTitle}
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                <Chip tone="signal">
+                  <Layers className="h-3 w-3" />
+                  {finalReport.difficulty}
+                </Chip>
+                <Chip tone="trace">{finalReport.language}</Chip>
+                <Chip tone="pass">
+                  <ShieldCheck className="h-3 w-3" />
+                  Resolved
+                </Chip>
+              </div>
+            </div>
 
-        {/* Section 2: Root Cause Analysis */}
-        <div className="space-y-1.5 border-b border-[#30363D] pb-5">
-          <h2 className="text-xs font-mono font-bold text-[#D29922] uppercase tracking-wider">
-            2. CONFIRMED ROOT CAUSE ANALYSIS
-          </h2>
-          <div className="p-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-[#C9D1D9] font-mono leading-relaxed select-text">
-            {finalReport.rootCauseSummary}
+            <div className="shrink-0 self-start sm:self-auto">
+              <div className="stamp rounded border-pass/70 text-pass">
+                <span className="px-3 py-1.5">Case closed</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Section 3: Resolution & Code Diff */}
-        <div className="space-y-2 border-b border-[#30363D] pb-5">
-          <h2 className="text-xs font-mono font-bold text-[#BC8CFF] uppercase tracking-wider">
-            3. IMPLEMENTED SOLUTION & CODE DIFF
-          </h2>
-          <p className="text-xs text-[#8B949E]">
-            {finalReport.fixAppliedSummary}
-          </p>
-          <div className="p-3 rounded-md bg-[#0D1117] border border-[#30363D] font-mono text-xs text-[#3FB950] space-y-1 select-text">
-            <div className="text-[10px] text-[#8B949E] font-semibold uppercase">Target: {finalReport.fixSelected.targetFile}</div>
-            <pre className="whitespace-pre">
-              <code>{finalReport.fixSelected.diffAfter}</code>
-            </pre>
-          </div>
+        {/* body */}
+        <div className="divide-y divide-ink-line px-6 sm:px-9">
+          {SECTIONS.map((s, i) => (
+            <motion.section
+              key={s.key}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35 + i * 0.1, duration: 0.5 }}
+              className="py-7"
+            >
+              <div className="mb-3 flex items-baseline gap-3">
+                <span
+                  className={cx(
+                    'font-display text-[13px] font-bold tracking-[0.1em]',
+                    s.tone === 'signal' && 'text-signal',
+                    s.tone === 'clue' && 'text-clue',
+                    s.tone === 'trace' && 'text-trace',
+                    s.tone === 'pass' && 'text-pass',
+                  )}
+                >
+                  {s.n}
+                </span>
+                <h3 className="font-display text-[15px] font-bold uppercase tracking-[0.1em] text-fg">
+                  {s.label}
+                </h3>
+                <span className="hidden h-px flex-1 bg-ink-line sm:block" />
+              </div>
+
+              {s.key === 'impact' && (
+                <p className="max-w-[78ch] text-[14.5px] leading-[1.75] text-fg-dim">
+                  {finalReport.technicalImpact}
+                </p>
+              )}
+
+              {s.key === 'cause' && (
+                <p className="select-text max-w-[78ch] rounded-[5px] border-l-2 border-clue/60 bg-ink-950 p-4 font-mono text-[12.5px] leading-relaxed text-fg-dim">
+                  {finalReport.rootCauseSummary}
+                </p>
+              )}
+
+              {s.key === 'solution' && (
+                <div className="space-y-3">
+                  <p className="max-w-[78ch] text-[14.5px] leading-[1.75] text-fg-dim">
+                    {finalReport.fixAppliedSummary}
+                  </p>
+                  <div className="select-text overflow-x-auto rounded-[5px] border border-ink-line bg-ink-950 p-4">
+                    <div className="mb-2 font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-fg-mute">
+                      target · {finalReport.fixSelected.targetFile}
+                    </div>
+                    <pre className="whitespace-pre font-mono text-[12px] leading-[1.7] text-pass">
+                      <code>{finalReport.fixSelected.diffAfter}</code>
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {s.key === 'prevention' && (
+                <p className="max-w-[78ch] text-[14.5px] leading-[1.75] text-fg-dim">
+                  {finalReport.preventionStrategy}
+                </p>
+              )}
+            </motion.section>
+          ))}
         </div>
 
-        {/* Section 4: Prevention */}
-        <div className="space-y-1.5">
-          <h2 className="text-xs font-mono font-bold text-[#3FB950] uppercase tracking-wider">
-            4. PREVENTION STRATEGY
-          </h2>
-          <p className="text-xs text-[#C9D1D9] leading-relaxed font-sans">
-            {finalReport.preventionStrategy}
-          </p>
+        {/* footer */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-line bg-ink-950 px-6 py-4 font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-fg-mute sm:px-9">
+          <span>signed · on-call investigator</span>
+          <span className="text-signal">
+            {new Date(finalReport.timestamp).toLocaleString()}
+          </span>
         </div>
-
-      </motion.div>
-
+      </motion.article>
     </div>
   );
 };
